@@ -16,5 +16,5 @@ Thursday 14/05/2026
 1.2.0
 Friday 15/5/2026
 - Added experimental GUI version, currently unstable and should not be used until it is complete
-- Adjusted changelog and README
+- Adjusted changelog and README, including README file extension from .txt to .md
 -----------------------------------------------------------
