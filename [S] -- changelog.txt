@@ -1,15 +1,20 @@
 CHANGELOG
 -----------------------------------------------------------
 0.0.0 - 0.0.2
-Tuesday 13/05/2026
+Wednesday 13/05/2026
 - Added README.txt and changelog.txt
 - Added project_gantt_chart.xlsx
 - Added standardised document naming
 - Fixed changelog formatting
 -----------------------------------------------------------
 1.0.0
-Wednesday 14/05/2026
-- Finished first prototype of machine learning
+Thursday 14/05/2026
+- Finished first prototype of main program
 - Adjusted file name formatting
 - Tested program with placeholder DATA
+-----------------------------------------------------------
+1.2.0
+Friday 15/5/2026
+- Added experimental GUI version, currently unstable and should not be used until it is complete
+- Adjusted changelog and README
 -----------------------------------------------------------
