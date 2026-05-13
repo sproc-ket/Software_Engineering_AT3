@@ -7,3 +7,8 @@ Tuesday 13/05/2026
 - Added standardised document naming
 - Fixed changelog formatting
 -----------------------------------------------------------
+1.0.0
+Wednesday 14/05/2026
+- Finished first prototype of machine learning
+- Adjusted file name formatting
+- Tested program with placeholder DATA
