@@ -102,7 +102,7 @@ class MarkEstimatorApp:
         main_frame = ttk.Frame(self.root, padding="15")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # --- Section 1: File Selection ---
+        # --- File Selection ---
         file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset ", padding="10")
         file_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -119,7 +119,7 @@ class MarkEstimatorApp:
         )
         self.lbl_file_status.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # --- Section 2: Missing Data Selection ---
+        # --- Missing Data Selection ---
         list_frame = ttk.LabelFrame(
             main_frame, text=" 2. Select Missing Mark to Estimate ", padding="10"
         )
@@ -137,7 +137,7 @@ class MarkEstimatorApp:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox_missing.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # --- Section 3: Actions ---
+        # --- Actions ---
         action_frame = ttk.Frame(main_frame, padding="5")
         action_frame.pack(fill=tk.X, pady=10)
 
@@ -162,7 +162,7 @@ class MarkEstimatorApp:
         )
         self.btn_open_file.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
 
-        # --- Section 4: Output Log ---
+        # --- Output Log ---
         result_frame = ttk.LabelFrame(
             main_frame, text=" 3. Estimation Results & Logs ", padding="10"
         )
