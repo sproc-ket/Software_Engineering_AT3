@@ -12,6 +12,8 @@ from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 # Import the Linear Regression model class from the scikit-learn machine learning library
 from sklearn.linear_model import LinearRegression
+# Import tkinterdnd2 for drag and drop file loading functionality
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 
 # Define the main application controller class for the Student Mark Estimator System
@@ -53,6 +55,11 @@ class MarkEstimatorApp:
         self._create_widgets()
         # Trigger the color application function to apply the dark style scheme to our design
         self._update_theme_styles()
+
+        # Register the window as a drag and drop target for CSV files
+        self.root.drop_target_register(DND_FILES)
+        # Bind the drop event to our file loading handler method
+        self.root.dnd_bind('<<Drop>>', self.handle_drop)
 
     # Define a helper function to dynamically alter color palettes when themes change
     def _update_theme_styles(self):
@@ -215,7 +222,7 @@ class MarkEstimatorApp:
 
         # --- Section 1: File Selection ---
         # Initialize an explicit group section wrapper tracking input data functions
-        file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset ", padding="10")
+        file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset (Browse or Drag & Drop CSV) ", padding="10")
         # Stretch the input container layout field to extend fully along the horizontal border axis
         file_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -347,6 +354,29 @@ class MarkEstimatorApp:
         if not selected_file:
             return
 
+        # Delegate to the shared loading method to avoid code duplication
+        self._load_csv_from_path(selected_file)
+
+    # Handle drag and drop file events to automatically load CSV files
+    def handle_drop(self, event):
+        # Extract the file path from the drop event data (tkinterdnd2 returns it in curly braces)
+        file_path = event.data.strip('{}')
+
+        # Verify that the dropped file has a .csv extension
+        if not file_path.lower().endswith('.csv'):
+            # Show a warning popup if the user drops a non-CSV file
+            messagebox.showwarning(
+                "Invalid File Type",
+                "Please drop a CSV file (.csv extension required)."
+            )
+            return
+
+        # Call the existing load_csv logic by simulating a file selection
+        # We'll create a modified version that accepts a path parameter
+        self._load_csv_from_path(file_path)
+
+    # Internal helper method to load CSV from a specific path (used by both browse and drag-drop)
+    def _load_csv_from_path(self, selected_file):
         # Initialize a protective execution monitoring block to isolate structural parsing bugs
         try:
             # Command the pandas engine library to process and map target file strings into matrices
@@ -736,8 +766,8 @@ class MarkEstimatorApp:
 
 # This conditional statement checks if the script is being executed directly by the user
 if __name__ == "__main__":
-    # Instantiate the base core window object frame from the tkinter software engine
-    root = tk.Tk()
+    # Instantiate the base core window object frame with drag-and-drop support from tkinterdnd2
+    root = TkinterDnD.Tk()
     # Pass the base window frame into our custom class constructor to run the app logic
     app = MarkEstimatorApp(root)
     # Start the persistent graphical interface loop to listen for user clicks and interactions

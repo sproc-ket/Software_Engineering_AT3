@@ -1,14 +1,16 @@
 CHANGELOG
 -----------------------------------------------------------------------------------------------
-0.0.0.0 - 0.0.2.0
 Wednesday 13/05/2026
+
+0.0.0.0 - 0.0.2.0
 - Added README.txt and changelog.txt
 - Added project_gantt_chart.xlsx
 - Added standardised document naming
 - Fixed changelog formatting
 -----------------------------------------------------------------------------------------------
-1.0.0.0
 Thursday 14/05/2026
+
+1.0.0.0
 - Finished first prototype of main program
 - Adjusted file name formatting
 - Tested program with placeholder DATA
@@ -36,4 +38,9 @@ Friday
 1.2.3.0
 - Committed changes relating to the "run all" button to mark_estimator_FULL COMMENTS.py
   and mark_estimator.py
+
+1.2.3.1
+- Overhauled README.txt including istructions on package installations, troubleshooting,
+  general instructions, features and dependancies
+- Added drag-and-drop method of file upload to mark_estimator_experimental.py
 -----------------------------------------------------------------------------------------------
