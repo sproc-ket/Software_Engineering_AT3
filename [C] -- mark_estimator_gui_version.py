@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 
 class MarkEstimatorApp:
@@ -24,6 +25,9 @@ class MarkEstimatorApp:
         self.style.theme_use("default")
         self._create_widgets()
         self._update_theme_styles()
+
+        self.root.drop_target_register(DND_FILES)
+        self.root.dnd_bind('<<Drop>>', self.handle_drop)
 
     def _update_theme_styles(self):
         if self.is_dark_mode:
@@ -120,7 +124,7 @@ class MarkEstimatorApp:
         top_utility_frame.pack(fill=tk.X, pady=(0, 10))
         self.btn_theme_toggle = ttk.Button(top_utility_frame, text="", command=self.toggle_theme)
         self.btn_theme_toggle.pack(side=tk.RIGHT)
-        file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset ", padding="10")
+        file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset (Browse or Drag & Drop CSV) ", padding="10")
         file_frame.pack(fill=tk.X, pady=(0, 10))
         self.btn_browse = ttk.Button(file_frame, text="Browse CSV File", command=self.load_csv)
         self.btn_browse.pack(side=tk.LEFT, padx=(0, 10))
@@ -191,6 +195,16 @@ class MarkEstimatorApp:
         selected_file = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
         if not selected_file:
             return
+        self._load_csv_from_path(selected_file)
+
+    def handle_drop(self, event):
+        file_path = event.data.strip('{}')
+        if not file_path.lower().endswith('.csv'):
+            messagebox.showwarning("Invalid File Type", "Please drop a CSV file (.csv extension required).")
+            return
+        self._load_csv_from_path(file_path)
+
+    def _load_csv_from_path(self, selected_file):
         try:
             temp_df = pd.read_csv(selected_file)
             if temp_df.empty:
@@ -342,6 +356,6 @@ class MarkEstimatorApp:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = TkinterDnD.Tk()
     app = MarkEstimatorApp(root)
     root.mainloop()

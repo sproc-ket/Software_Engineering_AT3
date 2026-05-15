@@ -46,4 +46,9 @@ Friday
 
 1.2.3.2
 - Minor edits to some comments
+
+1.2.3.3
+- Committed drag-and-drop code changes from mark_experimental_experimental.py to
+  mark_estimator.py and mark_estimator_FULL COMMENTS
+- Adjusted README.md
 -----------------------------------------------------------------------------------------------

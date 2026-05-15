@@ -1,5 +1,10 @@
 This is my Software Engineering Year 12 Assessment Task 3, all relevant files are attached.
 
+File naming scheme:
+[D] = DATA
+[C] = CODE
+[S] = SUPPORTING FILES
+
 STUDENT MARK ESTIMATOR - INSTALLATION & USAGE INSTRUCTIONS
 =============================================================
 
@@ -89,9 +94,3 @@ For issues or questions, check that:
 1. Python 3.x is installed
 2. All dependencies are up to date
 3. Your CSV file follows the correct format
-
-
-File naming scheme:
-[D] = DATA
-[C] = CODE
-[S] = SUPPORTING FILES
