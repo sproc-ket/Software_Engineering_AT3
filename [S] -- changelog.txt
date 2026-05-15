@@ -1,6 +1,6 @@
 CHANGELOG
 -----------------------------------------------------------------------------------------------
-Wednesday 13/05/2026
+WEDNESDAY 13/05/2026
 
 0.0.0.0 - 0.0.2.0
 - Added README.txt and changelog.txt
@@ -8,7 +8,7 @@ Wednesday 13/05/2026
 - Added standardised document naming
 - Fixed changelog formatting
 -----------------------------------------------------------------------------------------------
-Thursday 14/05/2026
+THURSDAY 14/05/2026
 
 1.0.0.0
 - Finished first prototype of main program
@@ -54,4 +54,7 @@ Friday
 
 1.2.3.4
 - Fixed an issue where an error occurs when trying to open updated file
+
+1.2.3.5
+- Updated instructional text: "text editor" --> "editor"
 -----------------------------------------------------------------------------------------------

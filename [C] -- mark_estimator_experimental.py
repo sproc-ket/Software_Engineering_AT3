@@ -303,7 +303,7 @@ class MarkEstimatorApp:
         # Build the custom background plain-text file viewer application execution tool launcher
         self.btn_open_file = ttk.Button(
             btn_grid,
-            text="Open in Notepad / Text Editor",
+            text="Open in Spreadsheet / Text Editor",
             command=self.open_exported_file,
             state=tk.DISABLED,
         )
@@ -605,7 +605,7 @@ class MarkEstimatorApp:
             # Show success popup
             messagebox.showinfo(
                 "Batch Estimation Complete",
-                f"Successfully estimated {total_count} missing mark(s)\n\nFile written to:\n{output_path}\n\nYou can now open it in your text editor."
+                f"Successfully estimated {total_count} missing mark(s)\n\nFile written to:\n{output_path}\n\nYou can now open it in your editor."
             )
 
             # Re-scan to update the missing data list (should be empty or reduced)
@@ -715,7 +715,7 @@ class MarkEstimatorApp:
             # Launch a success popup window confirming that the document was successfully written
             messagebox.showinfo(
                 "Export Success",
-                f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it in your text editor below.",
+                f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it in your editor below.",
             )
 
             # Re-scan data fields immediately to update problem listings and clear resolved tasks
@@ -752,14 +752,14 @@ class MarkEstimatorApp:
                 # Fall back to standard open commands to query system-mapped text applications
                 subprocess.Popen(["xdg-open", self.last_exported_file])
 
-            # Log the text editor launch action to confirm it was sent to the OS successfully
-            self.log_message(f"Opened file in text editor: {os.path.basename(self.last_exported_file)}")
+            # Log the editor launch action to confirm it was sent to the OS successfully
+            self.log_message(f"Opened file in editor: {os.path.basename(self.last_exported_file)}")
         # Handle cases where the operating system prevents running subprocess tasks
         except Exception as e:
             # Present a backup instruction message dialog helping users find the file manually
             messagebox.showerror(
                 "Open Failed",
-                f"Could not open text editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
+                f"Could not open editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
             )
 
 

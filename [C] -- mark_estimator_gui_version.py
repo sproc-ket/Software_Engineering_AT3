@@ -232,7 +232,7 @@ class MarkEstimatorApp:
         missing_mask = self.df[self.assessment_cols].isna().any(axis=1)
         missing_df = self.df[missing_mask]
         if missing_df.empty:
-            self.log_message("🎉 Excellent! No missing grades found in this entire dataset.")
+            self.log_message("No missing grades found in this dataset.")
             self.btn_estimate.config(state=tk.DISABLED)
             self.btn_run_all.config(state=tk.DISABLED)
             return
@@ -292,7 +292,7 @@ class MarkEstimatorApp:
             self.df.to_csv(output_path, index=False)
             self.last_exported_file = output_path
             self.btn_open_file.config(state=tk.NORMAL)
-            self.log_message(f"\n💾 Batch export completed: {output_path}")
+            self.log_message(f"\nBatch export completed: {output_path}")
             messagebox.showinfo("Batch Export Success", f"All missing marks were estimated and exported to:\n\n{output_path}")
             self.scan_for_missing_data()
         except Exception as e:
@@ -333,7 +333,7 @@ class MarkEstimatorApp:
             self.df.to_csv(output_path, index=False)
             self.last_exported_file = output_path
             self.btn_open_file.config(state=tk.NORMAL)
-            self.log_message(f"\n💾 Document updated file exported to:\n -> {output_path}")
+            self.log_message(f"\nDocument updated file exported to:\n -> {output_path}")
             messagebox.showinfo("Export Success", f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it in your text editor below.")
             self.scan_for_missing_data()
         except Exception as e:
