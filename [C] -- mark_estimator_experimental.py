@@ -40,7 +40,7 @@ class MarkEstimatorApp:
         self.assessment_cols = []
         # Initialize an empty list array to map specific missing row details to the UI components
         self.missing_records = []
-        
+
         # Define an internal state flag for tracking the active window theme style (True means Dark Mode)
         self.is_dark_mode = True
 
@@ -48,7 +48,7 @@ class MarkEstimatorApp:
         self.style = ttk.Style()
         # Enforce a flat cross-platform theme foundation for consistent color modifications
         self.style.theme_use("default")
-        
+
         # Call the layout design function to construct and arrange all structural window components
         self._create_widgets()
         # Trigger the color application function to apply the dark style scheme to our design
@@ -164,7 +164,7 @@ class MarkEstimatorApp:
             selectforeground=(self.card_bg if not self.is_dark_mode else self.fg_color),
             highlightbackground=self.bg_color,
         )
-        
+
         # Save output logs from getting cleared when switching themes by modifying the state flag
         self.txt_output.config(state=tk.NORMAL)
         # Inject matching font settings, dark backgrounds, and white cursors to the text window
@@ -179,7 +179,7 @@ class MarkEstimatorApp:
 
         # Dynamically change the text on the theme button to guide user expectations
         self.btn_theme_toggle.config(text=self.theme_btn_text)
-        
+
         # If an active file is open, color the path text using our status indicator color rule
         if self.df is not None:
             self.lbl_file_status.config(foreground=self.status_text)
@@ -243,7 +243,7 @@ class MarkEstimatorApp:
 
         # Initialize a standard vertical scrollbar tracking lengthy scroll listings smoothly
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
-        
+
         # Build the functional interactive core data queue listbox tracking entry selections
         self.listbox_missing = tk.Listbox(
             list_frame,
@@ -280,8 +280,18 @@ class MarkEstimatorApp:
             command=self.process_estimation,
             state=tk.DISABLED,
         )
-        # Anchor the ML execution button tool on the left half of the action row grid box
+        # Anchor the ML execution button tool on the left third of the action row grid box
         self.btn_estimate.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+
+        # NEW: Build the "Run All" button to process all missing marks at once
+        self.btn_run_all = ttk.Button(
+            btn_grid,
+            text="Run All Estimations",
+            command=self.process_all_estimations,
+            state=tk.DISABLED,
+        )
+        # Position the Run All button in the middle third of the action row grid box
+        self.btn_run_all.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
 
         # Build the custom background plain-text file viewer application execution tool launcher
         self.btn_open_file = ttk.Button(
@@ -290,7 +300,7 @@ class MarkEstimatorApp:
             command=self.open_exported_file,
             state=tk.DISABLED,
         )
-        # Anchor the text utility execution button tool on the right half of the action grid box
+        # Anchor the text utility execution button tool on the right third of the action grid box
         self.btn_open_file.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
 
         # --- Section 4: Output Log ---
@@ -379,7 +389,7 @@ class MarkEstimatorApp:
             )
             # Call the style manager immediately to color the newly updated label appropriately
             self._update_theme_styles()
-            
+
             # Print out a clear success confirmation message on the user status terminal interface
             self.log_message(
                 f"Success: Loaded file successfully: {os.path.basename(selected_file)}",
@@ -416,6 +426,7 @@ class MarkEstimatorApp:
             )
             # Keep calculation triggers locked since there are no values left to resolve
             self.btn_estimate.config(state=tk.DISABLED)
+            self.btn_run_all.config(state=tk.DISABLED)
             # Exit early since there is no missing work left to calculate
             return
 
@@ -436,11 +447,12 @@ class MarkEstimatorApp:
                         {"id": student_id, "column": col}
                     )
 
-        # Unlock the estimation button since there are now valid target items available to select
+        # Unlock the estimation buttons since there are now valid target items available to process
         self.btn_estimate.config(state=tk.NORMAL)
+        self.btn_run_all.config(state=tk.NORMAL)
         # Print a status summary to update the user on the total number of empty items found
         self.log_message(
-            f"Found {len(self.missing_records)} missing item(s). Highlight one above to process."
+            f"Found {len(self.missing_records)} missing item(s). Highlight one above to process, or click 'Run All Estimations'."
         )
 
     # Process selections and hand parameters over to machine learning execution branches
@@ -493,6 +505,88 @@ class MarkEstimatorApp:
         # Export the updated data values out into an external file sheet immediately
         self.export_results(target_id, target_col, predicted_mark)
 
+    # NEW: Process all missing estimations in one batch operation
+    def process_all_estimations(self):
+        # Check if there are any missing records to process
+        if not self.missing_records:
+            messagebox.showwarning(
+                "No Missing Data",
+                "There are no missing marks to estimate."
+            )
+            return
+
+        # Store the total count of items to process
+        total_count = len(self.missing_records)
+
+        # Clear the output log and print a header for the batch operation
+        self.log_message("", clear=True)
+        self.log_message("=" * 60)
+        self.log_message("           BATCH ESTIMATION - RUN ALL")
+        self.log_message("=" * 60)
+        self.log_message(f"Processing {total_count} missing mark(s)...\n")
+
+        # Create a list to store all estimation results for the summary
+        estimation_results = []
+
+        # Iterate through each missing record and estimate the mark
+        for idx, target_info in enumerate(self.missing_records, 1):
+            target_id = target_info["id"]
+            target_col = target_info["column"]
+
+            # Log progress for the current item
+            self.log_message(f"[{idx}/{total_count}] Processing: Student {target_id}, Column {target_col}")
+
+            # Run the ML prediction
+            predicted_mark, metrics = self.predict_mark(target_id, target_col)
+
+            # Update the DataFrame with the predicted mark
+            self.df.loc[self.df[self.id_col] == target_id, target_col] = predicted_mark
+
+            # Store the result for the summary
+            estimation_results.append({
+                "student_id": target_id,
+                "column": target_col,
+                "estimated_mark": predicted_mark
+            })
+
+            self.log_message(f"    -> Estimated Mark: {predicted_mark}\n")
+
+        # Export all results to a single file
+        dir_name, file_name = os.path.split(self.file_path)
+        output_path = os.path.join(dir_name, f"estimated_{file_name}")
+
+        try:
+            # Write the updated DataFrame to CSV
+            self.df.to_csv(output_path, index=False)
+
+            # Update the last exported file tracker
+            self.last_exported_file = output_path
+            # Enable the file viewer button
+            self.btn_open_file.config(state=tk.NORMAL)
+
+            # Print summary information
+            self.log_message("=" * 60)
+            self.log_message("           BATCH ESTIMATION COMPLETE")
+            self.log_message("=" * 60)
+            self.log_message(f"Total marks estimated: {total_count}")
+            self.log_message(f"\nResults exported to:\n -> {output_path}")
+            self.log_message("=" * 60)
+
+            # Show success popup
+            messagebox.showinfo(
+                "Batch Estimation Complete",
+                f"Successfully estimated {total_count} missing mark(s)!\n\nFile written to:\n{output_path}\n\nYou can now open it in your text editor."
+            )
+
+            # Re-scan to update the missing data list (should be empty or reduced)
+            self.scan_for_missing_data()
+
+        except Exception as e:
+            messagebox.showerror(
+                "Export Failure Error",
+                f"Could not export results:\n{str(e)}"
+            )
+
     # Build regression models on clean slices of data to predict missing values
     def predict_mark(self, target_id, target_col):
         # Create a list of feature columns by omitting the target column from the assessments list
@@ -535,7 +629,7 @@ class MarkEstimatorApp:
         X_train = train_data[feature_cols]
         # Isolate our training target targets (y) from the rows that have complete data
         y_train = train_data[target_col]
-        
+
         # FIXED: Convert single student row Series back to a clean 2D dataframe for scikit-learn models
         X_predict = pd.DataFrame([target_row[feature_cols]])
 
@@ -546,7 +640,7 @@ class MarkEstimatorApp:
 
         # Generate a mathematical prediction based on the target student's feature scores
         raw_pred = model.predict(X_predict)
-        
+
         # FIXED: Extract the numeric scalar using [0] to keep calculation tracking stable
         final_pred = round(max(0.0, min(100.0, raw_pred[0])), 1)
 
@@ -581,12 +675,12 @@ class MarkEstimatorApp:
         try:
             # Command pandas to write the updated dataframe matrix out into a new CSV file
             self.df.to_csv(output_path, index=False)
-            
+
             # Save the export location string link into our text file viewer tracker variable
             self.last_exported_file = output_path
             # Unlock the file browser shortcut button since the output file has been successfully saved
             self.btn_open_file.config(state=tk.NORMAL)
-            
+
             # Print out file path link confirmation lines inside our console tracking window area
             self.log_message(f"\nDocument updated file exported to:\n -> {output_path}")
             # Launch a success popup window confirming that the document was successfully written
@@ -628,14 +722,14 @@ class MarkEstimatorApp:
             else:
                 # Fall back to standard open commands to query system-mapped text applications
                 subprocess.Popen(["xdg-open", self.last_exported_file])
-                
+
             # Log the text editor launch action to confirm it was sent to the OS successfully
             self.log_message(f"Opened file in text editor: {os.path.basename(self.last_exported_file)}")
         # Handle cases where the operating system prevents running subprocess tasks
         except Exception as e:
             # Present a backup instruction message dialog helping users find the file manually
             messagebox.showerror(
-                "Open Failed", 
+                "Open Failed",
                 f"Could not open text editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
             )
 

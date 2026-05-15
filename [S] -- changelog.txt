@@ -1,32 +1,35 @@
 CHANGELOG
 -----------------------------------------------------------------------------------------------
-0.0.0 - 0.0.2
+0.0.0.0 - 0.0.2.0
 Wednesday 13/05/2026
 - Added README.txt and changelog.txt
 - Added project_gantt_chart.xlsx
 - Added standardised document naming
 - Fixed changelog formatting
 -----------------------------------------------------------------------------------------------
-1.0.0
+1.0.0.0
 Thursday 14/05/2026
 - Finished first prototype of main program
 - Adjusted file name formatting
 - Tested program with placeholder DATA
 -----------------------------------------------------------------------------------------------
-1.2.0
-Friday 15/5/2026
+FRIDAY 15/5/2026
+
+1.2.0.0
+Friday 
 - Added experimental GUI version, currently unstable and should not be used until it is complete
 - Adjusted changelog and README, including README file extension from .txt to .md
------------------------------------------------------------------------------------------------
-1.2.1
-Friday 15/5/2026
+
+1.2.1.0
 - GUI version is now the main version of this program
 - Adjusted changelog and README
------------------------------------------------------------------------------------------------
-1.2.2
-Friday 15/5/2026
+
+1.2.2.0
 - Added a temporary experimental program where things can be tested without impacting 
   the stable program
 - Added a new file with in-line comments to every line of code
 - Added new dark theme button for more customisability
+
+1.2.2.1
+- Added a "run all" button to mark_estimator_experimental.py
 -----------------------------------------------------------------------------------------------
