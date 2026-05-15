@@ -452,7 +452,7 @@ class MarkEstimatorApp:
         if missing_df.empty:
             # Print a success notification message to the user text field to notify them data is filled
             self.log_message(
-                "Success: No missing grades found in this entire dataset."
+                "Success: No missing grades found in this dataset."
             )
             # Keep calculation triggers locked since there are no values left to resolve
             self.btn_estimate.config(state=tk.DISABLED)
@@ -499,7 +499,7 @@ class MarkEstimatorApp:
             # Exit further processing paths until a valid selection is made
             return
 
-        # FIXED: Extract the raw integer index out of the selection tuple securely
+        # Extract the raw integer index out of the selection tuple securely
         selected_index = selection[0]
         # Look up the matching entry details from our internal data list using the index
         target_info = self.missing_records[selected_index]
@@ -605,7 +605,7 @@ class MarkEstimatorApp:
             # Show success popup
             messagebox.showinfo(
                 "Batch Estimation Complete",
-                f"Successfully estimated {total_count} missing mark(s)!\n\nFile written to:\n{output_path}\n\nYou can now open it in your text editor."
+                f"Successfully estimated {total_count} missing mark(s)\n\nFile written to:\n{output_path}\n\nYou can now open it in your text editor."
             )
 
             # Re-scan to update the missing data list (should be empty or reduced)
@@ -642,13 +642,12 @@ class MarkEstimatorApp:
             }
 
         # Isolate the specific student data row that contains our missing value target
-        # FIXED: Added .iloc[0] to guarantee we isolate exactly one row to avoid multi-row calculations
+        # .iloc[0] used to guarantee exactly one isolated row to avoid multi-row calculations
         target_row = self.df[self.df[self.id_col] == target_id].iloc[0]
 
         # Safety Fallback 3: Check if the student is missing grades across other feature columns too
-        # FIXED: Adjusted row check logic to match single-row Series architecture safely
         if target_row[feature_cols].isna().any():
-            # FIXED: Calculate the direct scalar mean score of this row Series safely with no array conversion errors
+            # Calculate the direct scalar mean score of this row Series
             student_avg = round(target_row[feature_cols].mean(), 1)
             # Return the student's personal performance average with an explicit fallback tag
             return student_avg, {
@@ -660,7 +659,7 @@ class MarkEstimatorApp:
         # Isolate our training target targets (y) from the rows that have complete data
         y_train = train_data[target_col]
 
-        # FIXED: Convert single student row Series back to a clean 2D dataframe for scikit-learn models
+        # Convert single student row Series back to a 2D dataframe for scikit-learn models
         X_predict = pd.DataFrame([target_row[feature_cols]])
 
         # Instantiate a standard linear regression model object from scikit-learn
@@ -671,11 +670,11 @@ class MarkEstimatorApp:
         # Generate a mathematical prediction based on the target student's feature scores
         raw_pred = model.predict(X_predict)
 
-        # FIXED: Extract the numeric scalar using [0] to keep calculation tracking stable
+        # Extract the numeric scalar using [0] to keep calculation tracking stable
         final_pred = round(max(0.0, min(100.0, raw_pred[0])), 1)
 
         # Build a supporting metrics dictionary to show users the background data trends
-        # FIXED: Formatted the internal calculations mean parameters to avoid numpy multi-array errors
+        # Formatted the internal calculations mean parameters to avoid numpy multi-array errors
         metrics = {
             f"Class Baseline Mean for {target_col}": round(
                 self.df[target_col].mean(), 2

@@ -43,4 +43,7 @@ Friday
 - Overhauled README.txt including istructions on package installations, troubleshooting,
   general instructions, features and dependancies
 - Added drag-and-drop method of file upload to mark_estimator_experimental.py
+
+1.2.3.2
+- Minor edits to some comments
 -----------------------------------------------------------------------------------------------
