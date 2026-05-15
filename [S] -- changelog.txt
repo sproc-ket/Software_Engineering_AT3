@@ -32,4 +32,8 @@ Friday
 
 1.2.2.1
 - Added a "run all" button to mark_estimator_experimental.py
+
+1.2.3.0
+- Committed changes relating to the "run all" button to mark_estimator_FULL COMMENTS.py
+  and mark_estimator.py
 -----------------------------------------------------------------------------------------------
