@@ -1,0 +1,646 @@
+# Import the os module to handle operating system file paths and string splits
+import os
+# Import the subprocess module to run external background applications like Notepad
+import subprocess
+# Import the sys module to detect the current operating system platform (Windows vs Mac)
+import sys
+# Import the base tkinter module as 'tk' for creating graphical user interfaces
+import tkinter as tk
+# Import specific interactive UI pop-up tools from the tkinter library
+from tkinter import filedialog, messagebox, ttk
+# Import the pandas data processing library to read, alter, and save CSV files
+import pandas as pd
+# Import the Linear Regression model class from the scikit-learn machine learning library
+from sklearn.linear_model import LinearRegression
+
+
+# Define the main application controller class for the Student Mark Estimator System
+class MarkEstimatorApp:
+
+    # The constructor method initializes the app state when a new instance is created
+    def __init__(self, root):
+        # Store the reference to the root Tkinter window container object inside the class instance
+        self.root = root
+        # Set the operating system window title bar text for the application window
+        self.root.title("Student Mark Estimator System")
+        # Define the initial startup window dimensions (750 pixels wide by 660 pixels high)
+        self.root.geometry("750x660")
+        # Enforce structural window restrictions by setting a minimum width and height limit
+        self.root.minsize(700, 580)
+
+        # Initialize an empty instance variable to store our loaded pandas DataFrame matrix
+        self.df = None
+        # Initialize an empty instance variable to track the raw absolute path to our selected CSV file
+        self.file_path = None
+        # Initialize an empty variable to hold the output path string of the estimated file export
+        self.last_exported_file = None
+        # Initialize an empty variable to record the header name of the student ID column
+        self.id_col = None
+        # Initialize an empty list array designed to store the names of all assessment columns
+        self.assessment_cols = []
+        # Initialize an empty list array to map specific missing row details to the UI components
+        self.missing_records = []
+        
+        # Define an internal state flag for tracking the active window theme style (True means Dark Mode)
+        self.is_dark_mode = True
+
+        # Initialize the global Tkinter themed style coordinator engine instance
+        self.style = ttk.Style()
+        # Enforce a flat cross-platform theme foundation for consistent color modifications
+        self.style.theme_use("default")
+        
+        # Call the layout design function to construct and arrange all structural window components
+        self._create_widgets()
+        # Trigger the color application function to apply the dark style scheme to our design
+        self._update_theme_styles()
+
+    # Define a helper function to dynamically alter color palettes when themes change
+    def _update_theme_styles(self):
+        # Check if the active theme flag evaluates to Dark Mode
+        if self.is_dark_mode:
+            # Set the background color to a deep slate charcoal gray shade
+            self.bg_color = "#1E1E1E"
+            # Set the inner container surfaces to a slightly lighter elevated gray hue
+            self.card_bg = "#2D2D2D"
+            # Set the primary text color to a soft, readable off-white shade
+            self.fg_color = "#E0E0E0"
+            # Set the primary highlight accent borders to a standard modern dark blue
+            self.accent_color = "#007ACC"
+            # Set the interactive button backgrounds to an asphalt gray color tone
+            self.btn_bg = "#3E3E3E"
+            # Set the hover color state for buttons to a lighter shade of charcoal
+            self.btn_active = "#4E4E4E"
+            # Set disabled widget background indicators to a deep dark gray shade
+            self.disabled_bg = "#252526"
+            # Set disabled widget foreground text fields to a muted ash gray shade
+            self.disabled_fg = "#7C7C7C"
+            # Set successful data notification labels to a high-contrast sky blue text color
+            self.status_text = "#4FC1FF"
+            # Define the visual text instruction prompt layout mapping for the header button
+            self.theme_btn_text = "Switch to Light Mode"
+        # Handle the alternative case execution branch for applying the Light Mode palette instead
+        else:
+            # Set the background color to a standard light gray concrete shade
+            self.bg_color = "#F5F5F5"
+            # Set the inner container surfaces to a pure bright white canvas layout
+            self.card_bg = "#FFFFFF"
+            # Set the primary text color to a stark, legible off-black ink shade
+            self.fg_color = "#202020"
+            # Set the primary highlight accent borders to a traditional Windows blue color tone
+            self.accent_color = "#005FB8"
+            # Set the interactive button backgrounds to a light cloud gray color tone
+            self.btn_bg = "#E1E1E1"
+            # Set the hover color state for buttons to a slightly deeper gray tint
+            self.btn_active = "#D0D0D0"
+            # Set disabled widget background indicators to a soft gray concrete shade
+            self.disabled_bg = "#EAEAEA"
+            # Set disabled widget foreground text fields to a faded silver gray shade
+            self.disabled_fg = "#A0A0A0"
+            # Set successful data notification labels to a classic standard green text color
+            self.status_text = "#008000"
+            # Define the visual text instruction prompt layout mapping for the header button
+            self.theme_btn_text = "Switch to Dark Mode"
+
+        # Apply the chosen theme palette color to the root layout system master background canvas
+        self.root.configure(bg=self.bg_color)
+
+        # Map style configurations globally to dot selectors for broad component coverage
+        self.style.configure(".", background=self.bg_color, foreground=self.fg_color)
+        # Apply the background theme color directly to the framework's base TFrame widgets
+        self.style.configure("TFrame", background=self.bg_color)
+        # Apply the background and foreground rules onto base text label container classes
+        self.style.configure("TLable", background=self.bg_color, foreground=self.fg_color)
+        # Re-apply matching color background variables to the standard basic label styling rules
+        self.style.configure("TLabel", background=self.bg_color, foreground=self.fg_color)
+
+        # Define border rules and background properties for all header group sections
+        self.style.configure(
+            "TLabelframe",
+            background=self.bg_color,
+            foreground=self.fg_color,
+            bordercolor=self.card_bg,
+            borderwidth=1,
+        )
+        # Apply specific bold font types and accent colors directly onto header section labels
+        self.style.configure(
+            "TLabelframe.Label",
+            background=self.bg_color,
+            foreground=self.accent_color,
+            font=("Arial", 10, "bold"),
+        )
+
+        # Apply padding dimensions, fonts, and dark theme colors to the standard button widgets
+        self.style.configure(
+            "TButton",
+            background=self.btn_bg,
+            foreground=self.fg_color,
+            bordercolor=self.bg_color,
+            borderwidth=1,
+            focusthickness=0,
+            padding=6,
+            font=("Arial", 9, "bold"),
+        )
+        # Dynamically map hover styles and lock out clicks on elements with active state locks
+        self.style.map(
+            "TButton",
+            background=[("active", self.btn_active), ("disabled", self.disabled_bg)],
+            foreground=[("disabled", self.disabled_fg)],
+        )
+
+        # Update styling rules for scrollbars to match the selected dark or light palette
+        self.style.configure(
+            "TScrollbar",
+            background=self.btn_bg,
+            troughcolor=self.bg_color,
+            bordercolor=self.bg_color,
+            arrowcolor=self.fg_color,
+        )
+
+        # Legacy Tkinter components ignore style dictionaries; update the listbox colors explicitly
+        self.listbox_missing.configure(
+            bg=self.card_bg,
+            fg=self.fg_color,
+            selectbackground=self.accent_color,
+            selectforeground=(self.card_bg if not self.is_dark_mode else self.fg_color),
+            highlightbackground=self.bg_color,
+        )
+        
+        # Save output logs from getting cleared when switching themes by modifying the state flag
+        self.txt_output.config(state=tk.NORMAL)
+        # Inject matching font settings, dark backgrounds, and white cursors to the text window
+        self.txt_output.configure(
+            bg=self.card_bg,
+            fg=self.fg_color,
+            insertbackground=self.fg_color,
+            highlightbackground=self.bg_color,
+        )
+        # Lock down user interaction capabilities on text windows following style switches
+        self.txt_output.config(state=tk.DISABLED)
+
+        # Dynamically change the text on the theme button to guide user expectations
+        self.btn_theme_toggle.config(text=self.theme_btn_text)
+        
+        # If an active file is open, color the path text using our status indicator color rule
+        if self.df is not None:
+            self.lbl_file_status.config(foreground=self.status_text)
+        # Otherwise, match the text display to our muted disabled color style rule
+        else:
+            self.lbl_file_status.config(foreground=self.disabled_fg)
+
+    # Action handler connected to the theme switch button click event
+    def toggle_theme(self):
+        # Invert the boolean theme state tracking variable whenever this method triggers
+        self.is_dark_mode = not self.is_dark_mode
+        # Call the style update system to redraw elements across the user layout window
+        self._update_theme_styles()
+
+    # Define the widget positioning code structure layer to build components inside layout maps
+    def _create_widgets(self):
+        # Initialize an external border spacer frame padding layout inside the master container window
+        main_frame = ttk.Frame(self.root, padding="15")
+        # Pack the master layout frame container to stretch out fully into all available space
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Construct a dedicated sub-panel container tracking row elements for top navigation items
+        top_utility_frame = ttk.Frame(main_frame)
+        # Position the top panel grid row container to stretch fully across the interface window width
+        top_utility_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Build the theme toggle button element inside our top control panel layout frame area
+        self.btn_theme_toggle = ttk.Button(
+            top_utility_frame, text="", command=self.toggle_theme
+        )
+        # Position the theme switch button directly against the upper right margin border row
+        self.btn_theme_toggle.pack(side=tk.RIGHT)
+
+        # --- Section 1: File Selection ---
+        # Initialize an explicit group section wrapper tracking input data functions
+        file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset ", padding="10")
+        # Stretch the input container layout field to extend fully along the horizontal border axis
+        file_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Build the file search button to run our local dataset parsing logic
+        self.btn_browse = ttk.Button(
+            file_frame, text="Browse CSV File", command=self.load_csv
+        )
+        # Position the file browser command component on the far left side of the row area
+        self.btn_browse.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Initialize a basic label placeholder area tracking directory information outputs
+        self.lbl_file_status = ttk.Label(
+            file_frame, text="No file loaded.", font=("Arial", 9, "italic")
+        )
+        # Pack the directory info placeholder component to fill any leftover space on the line row
+        self.lbl_file_status.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # --- Section 2: Missing Data Selection ---
+        # Initialize a dedicated group section frame monitoring empty data selection list outputs
+        list_frame = ttk.LabelFrame(
+            main_frame, text=" 2. Select Missing Mark to Estimate ", padding="10"
+        )
+        # Stretch out the missing list section box container to scale symmetrically across dimensions
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        # Initialize a standard vertical scrollbar tracking lengthy scroll listings smoothly
+        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        
+        # Build the functional interactive core data queue listbox tracking entry selections
+        self.listbox_missing = tk.Listbox(
+            list_frame,
+            yscrollcommand=scrollbar.set,
+            font=("Courier", 10),
+            selectmode=tk.SINGLE,
+            borderwidth=1,
+            relief=tk.FLAT,
+            highlightthickness=1,
+        )
+        # Synchronize vertical scrolling actions directly with the tracking queue text container items
+        scrollbar.config(command=self.listbox_missing.yview)
+
+        # Position the vertical scrolling handle tool tightly against the right layout margins
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # Position the missing data queue log listbox directly to the left of the scrolling tool
+        self.listbox_missing.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # --- Section 3: Actions ---
+        # Initialize a horizontal frame panel dividing operational control buttons uniformly
+        action_frame = ttk.Frame(main_frame, padding="5")
+        # Position the operational button frame grid directly beneath our core problem queues lists
+        action_frame.pack(fill=tk.X, pady=10)
+
+        # Build a flexible sub-layout mapping grid structure to cleanly align button controls
+        btn_grid = ttk.Frame(action_frame)
+        # Direct the sub-layout button grid frame container to span across horizontal interfaces
+        btn_grid.pack(fill=tk.X)
+
+        # Build the Machine Learning estimation execution trigger command button structure object
+        self.btn_estimate = ttk.Button(
+            btn_grid,
+            text="Run ML Estimation",
+            command=self.process_estimation,
+            state=tk.DISABLED,
+        )
+        # Anchor the ML execution button tool on the left half of the action row grid box
+        self.btn_estimate.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+
+        # Build the custom background plain-text file viewer application execution tool launcher
+        self.btn_open_file = ttk.Button(
+            btn_grid,
+            text="Open in Notepad / Text Editor",
+            command=self.open_exported_file,
+            state=tk.DISABLED,
+        )
+        # Anchor the text utility execution button tool on the right half of the action grid box
+        self.btn_open_file.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
+
+        # --- Section 4: Output Log ---
+        # Initialize the final bottom category label container framing computational log summaries
+        result_frame = ttk.LabelFrame(
+            main_frame, text=" 3. Estimation Results & Logs ", padding="10"
+        )
+        # Stretch our final output results logger framework window block downward into open areas
+        result_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+
+        # Build the multi-line plain text output container field to present background stats info
+        self.txt_output = tk.Text(
+            result_frame,
+            height=8,
+            font=("Consolas", 10),
+            wrap=tk.WORD,
+            state=tk.DISABLED,
+            borderwidth=1,
+            relief=tk.FLAT,
+            highlightthickness=1,
+        )
+        # Direct the statistical tracking log block window area to fully cover output frame walls
+        self.txt_output.pack(fill=tk.BOTH, expand=True)
+
+    # Define a helper function to safely append system status print instructions into logs
+    def log_message(self, message, clear=False):
+        # Temporarily enable editing on the locked console text window container area
+        self.txt_output.config(state=tk.NORMAL)
+        # If the clear parameter option evaluates to true, empty the full text window space
+        if clear:
+            self.txt_output.delete("1.0", tk.END)
+        # Append the new log string item onto the terminal area line row entry fields
+        self.txt_output.insert(tk.END, message + "\n")
+        # Lock user manual input access rules on text boxes following command executions
+        self.txt_output.config(state=tk.DISABLED)
+
+    # Open system browsing dialogues to handle user file picks securely
+    def load_csv(self):
+        # Launch file selector popup window filtered to display file extensions ending in .csv
+        selected_file = filedialog.askopenfilename(
+            filetypes=[("CSV Files", "*.csv")]
+        )
+        # If the user closes out the popup browser module without confirming an item selection, return
+        if not selected_file:
+            return
+
+        # Initialize a protective execution monitoring block to isolate structural parsing bugs
+        try:
+            # Command the pandas engine library to process and map target file strings into matrices
+            temp_df = pd.read_csv(selected_file)
+
+            # Verification rule: stop execution if the selected data sheet contains zero entries
+            if temp_df.empty:
+                # Direct a system modal warning box to alert users to document issues
+                messagebox.showerror("Error", "The chosen CSV file is empty.")
+                # Halt current function tracks to prevent processing broken layout components
+                return
+            # Verification rule: stop execution if data sheets contain fewer than two header columns
+            if len(temp_df.columns) < 2:
+                # Direct a structural layout warning popup alerting users to column data errors
+                messagebox.showerror(
+                    "Error",
+                    "CSV must contain at least a Student Identifier and one assessment column.",
+                )
+                # Halt current function tracks to prevent processing broken layout components
+                return
+
+            # Save the valid parsed dataset into our main memory storage DataFrame
+            self.df = temp_df
+            # Save the full system absolute location tracking path string link to our input file
+            self.file_path = selected_file
+            # Map the first left column category field layout to act as student search tags
+            self.id_col = self.df.columns
+            # Map all remaining dataset categories on the right as valid task entries lists
+            self.assessment_cols = list(self.df.columns[1:])
+
+            # Clear out any past document export trackers when opening separate file rows
+            self.last_exported_file = None
+            # Disable text viewer utilities until user predictions are successfully exported
+            self.btn_open_file.config(state=tk.DISABLED)
+
+            # Update the interface file row label to display the short filename of our loaded dataset
+            self.lbl_file_status.config(
+                text=os.path.basename(selected_file),
+                font=("Arial", 9, "bold"),
+            )
+            # Call the style manager immediately to color the newly updated label appropriately
+            self._update_theme_styles()
+            
+            # Print out a clear success confirmation message on the user status terminal interface
+            self.log_message(
+                f"Success: Loaded file successfully: {os.path.basename(selected_file)}",
+                clear=True,
+            )
+
+            # Scan the active document fields to flag missing data values immediately
+            self.scan_for_missing_data()
+
+        # Handle runtime issues like open file locks safely to prevent software crashes
+        except Exception as e:
+            # Surface raw read errors onto alert prompts to help with manual file troubleshooting
+            messagebox.showerror(
+                "File Read Error", f"Could not open or parse file:\n{str(e)}"
+            )
+
+    # Scan dataset indexes to look for empty cells that need to be processed
+    def scan_for_missing_data(self):
+        # Clear out text entry list fields inside our active missing items interface components
+        self.listbox_missing.delete(0, tk.END)
+        # Clear out old indexing maps to start fresh for our search scan run
+        self.missing_records = []
+
+        # Find rows where any assessment column is NaN (missing a score)
+        missing_mask = self.df[self.assessment_cols].isna().any(axis=1)
+        # Isolate the rows containing missing marks into a separate filtered subset
+        missing_df = self.df[missing_mask]
+
+        # If the filtered subset contains zero rows, then our tracking document is completely filled
+        if missing_df.empty:
+            # Print a success notification message to the user text field to notify them data is filled
+            self.log_message(
+                "Success: No missing grades found in this entire dataset."
+            )
+            # Keep calculation triggers locked since there are no values left to resolve
+            self.btn_estimate.config(state=tk.DISABLED)
+            # Exit early since there is no missing work left to calculate
+            return
+
+        # Loop through the rows containing missing marks to isolate empty cells
+        for _, row in missing_df.iterrows():
+            # Extract the unique Student ID string key from the current row
+            student_id = row[self.id_col]
+            # Check every individual assessment column for this specific student row
+            for col in self.assessment_cols:
+                # If the value in the cell is missing (NaN), record it as an estimation target
+                if pd.isna(row[col]):
+                    # Format a fixed-width readout string to neatly align item records in the listbox
+                    display_str = f"Student ID: {str(student_id):<12} | Missing Task: {col}"
+                    # Add the formatted text line onto the bottom of the visual problem tracker listbox
+                    self.listbox_missing.insert(tk.END, display_str)
+                    # Store the ID and column details as a dictionary in our internal tracking list
+                    self.missing_records.append(
+                        {"id": student_id, "column": col}
+                    )
+
+        # Unlock the estimation button since there are now valid target items available to select
+        self.btn_estimate.config(state=tk.NORMAL)
+        # Print a status summary to update the user on the total number of empty items found
+        self.log_message(
+            f"Found {len(self.missing_records)} missing item(s). Highlight one above to process."
+        )
+
+    # Process selections and hand parameters over to machine learning execution branches
+    def process_estimation(self):
+        # Retrieve the index number of the item currently clicked inside the listbox tracking queue
+        selection = self.listbox_missing.curselection()
+        # If the user clicks run without first highlighting an entry, show a warning prompt
+        if not selection:
+            # Display a quick modal reminder box notifying the user that an entry choice is required
+            messagebox.showwarning(
+                "Selection Required",
+                "Please click and select a specific row item from the list box above.",
+            )
+            # Exit further processing paths until a valid selection is made
+            return
+
+        # Extract the integer index value from the selection tuple structure
+        selected_index = selection[0]
+        # Look up the matching entry details from our internal data list using the index
+        target_info = self.missing_records[selected_index]
+        # Extract the student identifier key connected to the highlighted target entry
+        target_id = target_info["id"]
+        # Extract the target column category string connected to the highlighted target entry
+        target_col = target_info["column"]
+
+        # Run the dataset through our machine learning engine to calculate the missing grade
+        predicted_mark, metrics = self.predict_mark(target_id, target_col)
+
+        # Clear out past output readouts and format a clean header for the results panel
+        self.log_message("", clear=True)
+        self.log_message("=========================================")
+        self.log_message("           ESTIMATION OUTPUT             ")
+        self.log_message("=========================================")
+        # Print the identified student ID target value inside the results terminal console area
+        self.log_message(f"Student Target ID : {target_id}")
+        # Print the name of the missing assessment field being estimated inside the logs
+        self.log_message(f"Assessment Column : {target_col}")
+        # Print out the final calculated machine learning prediction score result entry
+        self.log_message(f"Estimated Mark    : {predicted_mark}")
+        self.log_message("-----------------------------------------")
+        # Print out supporting statistical summary context to build trust in our output metrics
+        self.log_message("Supporting Context Baseline Calculations:")
+        # Iterate over the calculated summary metrics dictionary to display baseline results
+        for k, v in metrics.items():
+            # Format each key-value pair as a clean bullet point line entry
+            self.log_message(f" - {k}: {v}")
+        # Print the closing divider element to wrap up the calculation results log entry
+        self.log_message("=========================================")
+
+        # Export the updated data values out into an external file sheet immediately
+        self.export_results(target_id, target_col, predicted_mark)
+
+    # Build regression models on clean slices of data to predict missing values
+    def predict_mark(self, target_id, target_col):
+        # Create a list of feature columns by omitting the target column from the assessments list
+        feature_cols = [c for c in self.assessment_cols if c != target_col]
+
+        # Safety Fallback 1: If there is only one assessment column, we can't use multi-feature ML
+        if not feature_cols:
+            # Calculate the class average score for this single category column instead
+            historical_avg = round(self.df[target_col].mean(), 1)
+            # Return the calculated class baseline score alongside an explicit fallback notation entry
+            return historical_avg, {"Fallback Route": "Global Class Column Mean"}
+
+        # Extract all complete rows that contain scores for both features and the target column
+        train_data = self.df.dropna(subset=[target_col] + feature_cols)
+
+        # Safety Fallback 2: We need at least two complete rows of student data to train a linear model
+        if len(train_data) < 2:
+            # Fall back to using the simple class historical average for this column category
+            historical_avg = round(self.df[target_col].mean(), 1)
+            # Return the class average and specify that there wasn't enough data for machine learning
+            return historical_avg, {
+                "Fallback Route": "Global Class Mean (Insufficient complete rows for ML)"
+            }
+
+        # Isolate the specific student data row that contains our missing value target
+        target_row = self.df[self.df[self.id_col] == target_id]
+
+        # Safety Fallback 3: Check if the student is missing grades across other feature columns too
+        if target_row[feature_cols].isna().any().any():
+            # Calculate the average score of this student's other completed tasks instead
+            student_avg = round(target_row[feature_cols].mean(axis=1).item(), 1)
+
+            # Return the student's personal performance average with an explicit fallback tag
+            return student_avg, {
+                "Fallback Route": "Student Row Mean (Multiple missing marks)"
+            }
+
+        # Isolate our training input features (X) from the rows that have complete data
+        X_train = train_data[feature_cols]
+        # Isolate our training target targets (y) from the rows that have complete data
+        y_train = train_data[target_col]
+        # Extract the matching feature score fields from our target student to use for the prediction
+        X_predict = target_row[feature_cols]
+
+        # Instantiate a standard linear regression model object from scikit-learn
+        model = LinearRegression()
+        # Train the model by mapping inputs to known scores inside our complete datasets
+        model.fit(X_train, y_train)
+
+        # Generate a mathematical prediction based on the target student's feature scores
+        raw_pred = model.predict(X_predict)
+        # Keep the final score bounded between 0.0 and 100.0 to match standard grading ranges
+        final_pred = round(max(0.0, min(100.0, raw_pred)), 1)
+
+        # Build a supporting metrics dictionary to show users the background data trends
+        metrics = {
+            f"Class Baseline Mean for {target_col}": round(
+                self.df[target_col].mean(), 2
+            ),
+            "Target Student Mean on other tests": round(
+                X_predict.mean(axis=1).values, 2
+            ),
+            "Robust Sample Sizes Used for Training": len(train_data),
+        }
+
+        # Return the final calculated prediction score alongside our supporting context details
+        return final_pred, metrics
+
+    # Save calculated estimations into local files without overwriting raw datasets
+    def export_results(self, target_id, target_col, predicted_mark):
+        # Update the empty cell inside our local pandas DataFrame with the predicted mark
+        self.df.loc[self.df[self.id_col] == target_id, target_col] = (
+            predicted_mark
+        )
+
+        # Split the absolute directory folder string away from the filename structure components
+        dir_name, file_name = os.path.split(self.file_path)
+        # Create a new output file name by adding the 'estimated_' prefix to the original name
+        output_path = os.path.join(dir_name, f"estimated_{file_name}")
+
+        # Wrap file export calls in a protective handling routine block to catch write permissions locks
+        try:
+            # Command pandas to write the updated dataframe matrix out into a new CSV file
+            self.df.to_csv(output_path, index=False)
+            
+            # Save the export location string link into our text file viewer tracker variable
+            self.last_exported_file = output_path
+            # Unlock the file browser shortcut button since the output file has been successfully saved
+            self.btn_open_file.config(state=tk.NORMAL)
+            
+            # Print out file path link confirmation lines inside our console tracking window area
+            self.log_message(f"\nDocument updated file exported to:\n -> {output_path}")
+            # Launch a success popup window confirming that the document was successfully written
+            messagebox.showinfo(
+                "Export Success",
+                f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it in your text editor below.",
+            )
+
+            # Re-scan data fields immediately to update problem listings and clear resolved tasks
+            self.scan_for_missing_data()
+        # Handle file writing errors (like when a file is open in Excel and locked by the OS) safely
+        except Exception as e:
+            # Launch a system warning alert window displaying the technical write failure message
+            messagebox.showerror(
+                "Export Failure Error",
+                f"Could not print output onto hard disk storage systems:\n{str(e)}",
+            )
+
+    # Launch plain-text system editor processes to open generated data logs
+    def open_exported_file(self):
+        # Confirm that an output path exists and that the generated document is on the disk
+        if not self.last_exported_file or not os.path.exists(self.last_exported_file):
+            # Show an error alert notification stating that the target file can no longer be found
+            messagebox.showerror("Error", "The estimated file could not be found.")
+            # Halt further launch tracks to prevent program execution crashes
+            return
+
+        # Wrap external process execution requests in a handling routine block to capture OS limits
+        try:
+            # Check if the hosting system environment evaluates to a native Windows OS platform
+            if sys.platform == "win32":
+                # Force Windows to open the exported file directly inside an independent Notepad process
+                subprocess.Popen(["notepad.exe", self.last_exported_file])
+            # Check if the hosting system environment evaluates to a Apple macOS platform instead
+            elif sys.platform == "darwin":
+                # Launch macOS subprocess parameters targeting the default Apple TextEdit app directly
+                subprocess.Popen(["open", "-a", "TextEdit", self.last_exported_file])
+            # Handle alternative system environments (like desktop flavors of Linux) cleanly
+            else:
+                # Fall back to standard open commands to query system-mapped text applications
+                subprocess.Popen(["xdg-open", self.last_exported_file])
+                
+            # Log the text editor launch action to confirm it was sent to the OS successfully
+            self.log_message(f"Opened file in text editor: {os.path.basename(self.last_exported_file)}")
+        # Handle cases where the operating system prevents running subprocess tasks
+        except Exception as e:
+            # Present a backup instruction message dialog helping users find the file manually
+            messagebox.showerror(
+                "Open Failed", 
+                f"Could not open text editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
+            )
+
+
+# This conditional statement checks if the script is being executed directly by the user
+if __name__ == "__main__":
+    # Instantiate the base core window object frame from the tkinter software engine
+    root = tk.Tk()
+    # Pass the base window frame into our custom class constructor to run the app logic
+    app = MarkEstimatorApp(root)
+    # Start the persistent graphical interface loop to listen for user clicks and interactions
+    root.mainloop()

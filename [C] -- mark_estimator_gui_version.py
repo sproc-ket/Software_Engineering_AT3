@@ -12,44 +12,62 @@ class MarkEstimatorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Student Mark Estimator System")
-        self.root.geometry("750x750")
-        self.root.minsize(750, 750)
+        self.root.geometry("750x660")
+        self.root.minsize(700, 580)
 
         # Application State
         self.df = None
         self.file_path = None
-        self.last_exported_file = None  # Tracks the most recently saved file path
+        self.last_exported_file = None
         self.id_col = None
         self.assessment_cols = []
         self.missing_records = []
+        
+        # New State: Theme tracking (Default to True for Dark Mode)
+        self.is_dark_mode = True
 
-        self._setup_dark_theme()
-        self._create_widgets()
-    
-    def _setup_dark_theme(self):
-        """Defines and applies a cohesive dark-palette configuration across all UI objects."""
-        # Color Palette Variables
-        self.bg_color = "#1E1E1E"        # Dark Gray background
-        self.card_bg = "#2D2D2D"         # Slightly lighter gray for sections
-        self.fg_color = "#E0E0E0"        # Crisp light text
-        self.accent_color = "#007ACC"    # Blue accents for selections and boundaries
-        self.btn_bg = "#3E3E3E"          # Button base surface color
-        self.btn_active = "#4E4E4E"      # Button hover state surface color
-        self.green_text = "#4FC1FF"      # Electric blue/green variant for success indicators
-
-        # Apply global container window background configurations
-        self.root.configure(bg=self.bg_color)
-
-        # Configure TTK Styles Matrix mappings
+        # Initialize Themes and UI Components
         self.style = ttk.Style()
         self.style.theme_use("default")
+        
+        self._create_widgets()
+        self._update_theme_styles()
 
-        # Global Frame Configurations
+    def _update_theme_styles(self):
+        """Dynamically reconfigures color palettes based on the selected mode."""
+        if self.is_dark_mode:
+            self.bg_color = "#1E1E1E"        # Deep slate
+            self.card_bg = "#2D2D2D"         # Charcoal container surface
+            self.fg_color = "#E0E0E0"        # Crisp white text
+            self.accent_color = "#007ACC"    # Neon blue focus bars
+            self.btn_bg = "#3E3E3E"          # Charcoal button face
+            self.btn_active = "#4E4E4E"      # Light charcoal hover tint
+            self.disabled_bg = "#252526"     # Muted frame color
+            self.disabled_fg = "#7C7C7C"     # Ash gray
+            self.status_text = "#4FC1FF"     # Sky blue confirmation text
+            self.theme_btn_text = "Switch to Light Mode"
+        else:
+            self.bg_color = "#F5F5F5"        # Light gray base canvas
+            self.card_bg = "#FFFFFF"         # Pure white container surfaces
+            self.fg_color = "#202020"        # Inky dark body text
+            self.accent_color = "#005FB8"    # Classic standard windows blue
+            self.btn_bg = "#E1E1E1"          # Soft light button face
+            self.btn_active = "#D0D0D0"      # Subtle hover gray shade
+            self.disabled_bg = "#EAEAEA"     # Ghost white container lock
+            self.disabled_fg = "#A0A0A0"     # Faded text lock
+            self.status_text = "#008000"     # Kelly green confirmation text
+            self.theme_btn_text = "Switch to Dark Mode"
+
+        # Apply root background frame properties
+        self.root.configure(bg=self.bg_color)
+
+        # TTK Global Component Styling
         self.style.configure(".", background=self.bg_color, foreground=self.fg_color)
         self.style.configure("TFrame", background=self.bg_color)
-
-        # LabelFrame Section Box Containers
         self.style.configure("TLable", background=self.bg_color, foreground=self.fg_color)
+        self.style.configure("TLabel", background=self.bg_color, foreground=self.fg_color)
+
+        # TTK Section Header Framework mappings
         self.style.configure(
             "TLabelframe",
             background=self.bg_color,
@@ -64,10 +82,7 @@ class MarkEstimatorApp:
             font=("Arial", 10, "bold"),
         )
 
-        # Labels Matrix mapping
-        self.style.configure("TLabel", background=self.bg_color, foreground=self.fg_color)
-
-        # Custom Button System Implementations
+        # TTK Custom Button Configurations
         self.style.configure(
             "TButton",
             background=self.btn_bg,
@@ -75,34 +90,74 @@ class MarkEstimatorApp:
             bordercolor=self.bg_color,
             borderwidth=1,
             focusthickness=0,
-            focuscolor=self.accent_color,
             padding=6,
             font=("Arial", 9, "bold"),
         )
         self.style.map(
             "TButton",
-            background=[("active", self.btn_active), ("disabled", "#252526")],
-            foreground=[("disabled", "#7C7C7C")],
+            background=[("active", self.btn_active), ("disabled", self.disabled_bg)],
+            foreground=[("disabled", self.disabled_fg)],
         )
 
-        # Scrollbars tracking configuration elements
+        # TTK Scrollbar System elements
         self.style.configure(
             "TScrollbar",
-            gripcount=0,
             background=self.btn_bg,
             troughcolor=self.bg_color,
             bordercolor=self.bg_color,
-            lightcolor=self.bg_color,
-            darkcolor=self.bg_color,
             arrowcolor=self.fg_color,
         )
 
+        # Update Non-TTK Core Elements (Requires direct injection commands)
+        self.listbox_missing.configure(
+            bg=self.card_bg,
+            fg=self.fg_color,
+            selectbackground=self.accent_color,
+            selectforeground=(self.card_bg if not self.is_dark_mode else self.fg_color),
+            highlightbackground=self.bg_color,
+        )
+        
+        # Keep track of text contents before flipping styles to prevent wiped containers
+        current_text = self.txt_output.get("1.0", tk.END).strip()
+        self.txt_output.config(state=tk.NORMAL)
+        self.txt_output.configure(
+            bg=self.card_bg,
+            fg=self.fg_color,
+            insertbackground=self.fg_color,
+            highlightbackground=self.bg_color,
+        )
+        self.txt_output.config(state=tk.DISABLED)
+
+        # Dynamic Button Text Adjustments
+        self.btn_theme_toggle.config(text=self.theme_btn_text)
+        
+        # Color correct the file upload status message cleanly
+        if self.df is not None:
+            self.lbl_file_status.config(foreground=self.status_text)
+        else:
+            self.lbl_file_status.config(foreground=self.disabled_fg)
+
+    def toggle_theme(self):
+        """Action handler linked to theme switch button."""
+        self.is_dark_mode = not self.is_dark_mode
+        self._update_theme_styles()
+
     def _create_widgets(self):
-        """Builds the layout structures using Tkinter frames and themes."""
+        """Builds standard structural container matrices."""
         main_frame = ttk.Frame(self.root, padding="15")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # --- File Selection ---
+        # --- Top Menu Panel Area ---
+        top_utility_frame = ttk.Frame(main_frame)
+        top_utility_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # NEW Theme Toggle Button Placement
+        self.btn_theme_toggle = ttk.Button(
+            top_utility_frame, text="", command=self.toggle_theme
+        )
+        self.btn_theme_toggle.pack(side=tk.RIGHT)
+
+        # --- Section 1: File Selection ---
         file_frame = ttk.LabelFrame(main_frame, text=" 1. Load Dataset ", padding="10")
         file_frame.pack(fill=tk.X, pady=(0, 10))
 
@@ -112,36 +167,36 @@ class MarkEstimatorApp:
         self.btn_browse.pack(side=tk.LEFT, padx=(0, 10))
 
         self.lbl_file_status = ttk.Label(
-            file_frame,
-            text="No file loaded.",
-            font=("Arial", 9, "italic"),
-            foreground="gray",
+            file_frame, text="No file loaded.", font=("Arial", 9, "italic")
         )
         self.lbl_file_status.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # --- Missing Data Selection ---
+        # --- Section 2: Missing Data Selection ---
         list_frame = ttk.LabelFrame(
             main_frame, text=" 2. Select Missing Mark to Estimate ", padding="10"
         )
         list_frame.pack(fill=tk.BOTH, expand=True, pady=10)
 
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        
         self.listbox_missing = tk.Listbox(
             list_frame,
             yscrollcommand=scrollbar.set,
             font=("Courier", 10),
             selectmode=tk.SINGLE,
+            borderwidth=1,
+            relief=tk.FLAT,
+            highlightthickness=1,
         )
         scrollbar.config(command=self.listbox_missing.yview)
 
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox_missing.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # --- Actions ---
+        # --- Section 3: Actions ---
         action_frame = ttk.Frame(main_frame, padding="5")
         action_frame.pack(fill=tk.X, pady=10)
 
-        # Horizontal sub-layout for buttons
         btn_grid = ttk.Frame(action_frame)
         btn_grid.pack(fill=tk.X)
 
@@ -153,16 +208,15 @@ class MarkEstimatorApp:
         )
         self.btn_estimate.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
 
-        # NEW: Open file button (initially hidden/disabled until an export happens)
         self.btn_open_file = ttk.Button(
             btn_grid,
-            text="Open Estimated File",
+            text="📝 Open in Notepad / Text Editor",
             command=self.open_exported_file,
             state=tk.DISABLED,
         )
         self.btn_open_file.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
 
-        # --- Output Log ---
+        # --- Section 4: Output Log ---
         result_frame = ttk.LabelFrame(
             main_frame, text=" 3. Estimation Results & Logs ", padding="10"
         )
@@ -174,6 +228,9 @@ class MarkEstimatorApp:
             font=("Consolas", 10),
             wrap=tk.WORD,
             state=tk.DISABLED,
+            borderwidth=1,
+            relief=tk.FLAT,
+            highlightthickness=1,
         )
         self.txt_output.pack(fill=tk.BOTH, expand=True)
 
@@ -208,18 +265,18 @@ class MarkEstimatorApp:
 
             self.df = temp_df
             self.file_path = selected_file
-            self.id_col = self.df.columns[0]
+            self.id_col = self.df.columns
             self.assessment_cols = list(self.df.columns[1:])
 
-            # Reset file tracker state when loading a completely new original file
             self.last_exported_file = None
             self.btn_open_file.config(state=tk.DISABLED)
 
             self.lbl_file_status.config(
                 text=os.path.basename(selected_file),
-                foreground="green",
                 font=("Arial", 9, "bold"),
             )
+            self._update_theme_styles() # Refresh color mapping configurations immediately
+            
             self.log_message(
                 f"Loaded file successfully: {os.path.basename(selected_file)}",
                 clear=True,
@@ -242,7 +299,7 @@ class MarkEstimatorApp:
 
         if missing_df.empty:
             self.log_message(
-                "No missing grades found in this dataset."
+                "🎉 Excellent! No missing grades found in this entire dataset."
             )
             self.btn_estimate.config(state=tk.DISABLED)
             return
@@ -313,7 +370,8 @@ class MarkEstimatorApp:
         target_row = self.df[self.df[self.id_col] == target_id]
 
         if target_row[feature_cols].isna().any().any():
-            student_avg = round(target_row[feature_cols].mean(axis=1).values[0], 1)
+            student_avg = round(target_row[feature_cols].mean(axis=1).item(), 1)
+
             return student_avg, {
                 "Fallback Route": "Student Row Mean (Multiple missing marks)"
             }
@@ -325,7 +383,7 @@ class MarkEstimatorApp:
         model = LinearRegression()
         model.fit(X_train, y_train)
 
-        raw_pred = model.predict(X_predict)[0]
+        raw_pred = model.predict(X_predict)
         final_pred = round(max(0.0, min(100.0, raw_pred)), 1)
 
         metrics = {
@@ -333,7 +391,7 @@ class MarkEstimatorApp:
                 self.df[target_col].mean(), 2
             ),
             "Target Student Mean on other tests": round(
-                X_predict.mean(axis=1).values[0], 2
+                X_predict.mean(axis=1).values, 2
             ),
             "Robust Sample Sizes Used for Training": len(train_data),
         }
@@ -352,14 +410,13 @@ class MarkEstimatorApp:
         try:
             self.df.to_csv(output_path, index=False)
             
-            # Save reference and enable the open file button widget
             self.last_exported_file = output_path
             self.btn_open_file.config(state=tk.NORMAL)
             
-            self.log_message(f"\nDocument updated file exported to:\n -> {output_path}")
+            self.log_message(f"\n💾 Document updated file exported to:\n -> {output_path}")
             messagebox.showinfo(
                 "Export Success",
-                f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it using the button below.",
+                f"Successfully calculated results!\nFile written out to:\n\n{output_path}\n\nYou can now open it in your text editor below.",
             )
 
             self.scan_for_missing_data()
@@ -370,25 +427,24 @@ class MarkEstimatorApp:
             )
 
     def open_exported_file(self):
-        """NEW FEATURE: Cross-platform utility that natively opens the generated file."""
+        """Launches the exported file specifically inside a plain-text editor."""
         if not self.last_exported_file or not os.path.exists(self.last_exported_file):
             messagebox.showerror("Error", "The estimated file could not be found.")
             return
 
         try:
-            # Handles opening files natively across Windows, MacOS, and Linux environments
             if sys.platform == "win32":
                 subprocess.Popen(["notepad.exe", self.last_exported_file])
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", self.last_exported_file])
+                subprocess.Popen(["open", "-a", "TextEdit", self.last_exported_file])
             else:
                 subprocess.Popen(["xdg-open", self.last_exported_file])
                 
-            self.log_message(f"Triggered native OS request to open: {os.path.basename(self.last_exported_file)}")
+            self.log_message(f"📝 Opened file in text editor: {os.path.basename(self.last_exported_file)}")
         except Exception as e:
             messagebox.showerror(
                 "Open Failed", 
-                f"Your OS could not open this file automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
+                f"Could not open text editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}"
             )
 
 

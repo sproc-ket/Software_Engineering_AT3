@@ -20,5 +20,13 @@ Friday 15/5/2026
 -----------------------------------------------------------------------------------------------
 1.2.1
 Friday 15/5/2026
-- GUI version is not the main version of this program
+- GUI version is now the main version of this program
 - Adjusted changelog and README
+-----------------------------------------------------------------------------------------------
+1.2.2
+Friday 15/5/2026
+- Added a temporary experimental program where things can be tested without impacting 
+  the stable program
+- Added a new file with in-line comments to every line of code
+- Added new dark theme button for more customisability
+-----------------------------------------------------------------------------------------------
