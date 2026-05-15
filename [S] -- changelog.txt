@@ -51,4 +51,7 @@ Friday
 - Committed drag-and-drop code changes from mark_experimental_experimental.py to
   mark_estimator.py and mark_estimator_FULL COMMENTS
 - Adjusted README.md
+
+1.2.3.4
+- Fixed an issue where an error occurs when trying to open updated file
 -----------------------------------------------------------------------------------------------

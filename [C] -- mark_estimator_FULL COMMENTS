@@ -742,16 +742,15 @@ class MarkEstimatorApp:
         try:
             # Check if the hosting system environment evaluates to a native Windows OS platform
             if sys.platform == "win32":
-                # Force Windows to open the exported file directly inside an independent Notepad process
-                subprocess.Popen(["notepad.exe", self.last_exported_file])
+                # Try to open with Notepad first, fall back to default application if Notepad fails
+                try:
+                    subprocess.Popen(["notepad.exe", self.last_exported_file])
+                except FileNotFoundError:
+                    os.startfile(self.last_exported_file)
             # Check if the hosting system environment evaluates to a Apple macOS platform instead
             elif sys.platform == "darwin":
-                # Launch macOS subprocess parameters targeting the default Apple TextEdit app directly
-                subprocess.Popen(["open", "-a", "TextEdit", self.last_exported_file])
-            # Handle alternative system environments (like desktop flavors of Linux) cleanly
-            else:
-                # Fall back to standard open commands to query system-mapped text applications
-                subprocess.Popen(["xdg-open", self.last_exported_file])
+                # Launch macOS subprocess parameters targeting the default app for the file type
+                subprocess.Popen(["open", self.last_exported_file])
 
             # Log the text editor launch action to confirm it was sent to the OS successfully
             self.log_message(f"Opened file in text editor: {os.path.basename(self.last_exported_file)}")

@@ -345,12 +345,15 @@ class MarkEstimatorApp:
             return
         try:
             if sys.platform == "win32":
-                subprocess.Popen(["notepad.exe", self.last_exported_file])
+                try:
+                    subprocess.Popen(["notepad.exe", self.last_exported_file])
+                except FileNotFoundError:
+                    os.startfile(self.last_exported_file)
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", "-a", "TextEdit", self.last_exported_file])
+                subprocess.Popen(["open", self.last_exported_file])
             else:
                 subprocess.Popen(["xdg-open", self.last_exported_file])
-            self.log_message(f"📝 Opened file in text editor: {os.path.basename(self.last_exported_file)}")
+            self.log_message(f"Opened file in text editor: {os.path.basename(self.last_exported_file)}")
         except Exception as e:
             messagebox.showerror("Open Failed", f"Could not open text editor automatically:\n{str(e)}\n\nYou can find it at:\n{self.last_exported_file}")
 
