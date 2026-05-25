@@ -94,3 +94,41 @@ For issues or questions, check that:
 1. Python 3.x is installed
 2. All dependencies are up to date
 3. Your CSV file follows the correct format
+
+
+HOW IT WORKS
+------------
+Supporting metrics:
+- Class Baseline Mean - Average score for that assessment across all students
+- Target Student Mean - The student's average on OTHER tests
+- Training Sample Size - How many complete student records were used to train the model
+
+
+Fallback Strategies (When ML Won't Work)
+----------------------------------------
+The program has 3 fallback routes for edge cases:
+
+- Fallback 1: Only One Assessment Column
+  If there's only 1 column total (e.g., just "FinalExam"), you can't use other marks to predict.
+
+  Solution: Returns the class average for that column.
+
+
+- Fallback 2: Not Enough Training Data
+  If fewer than 2 students have complete data, Linear Regression can't train.
+
+  Solution: Returns the class average for that column.
+
+
+- Fallback 3: Student Missing Multiple Marks
+  If the student is missing marks in OTHER columns too (e.g., missing both Test2 AND Test3), you can't use their Test2 score to predict Test3.
+
+Solution: Returns the student's personal average from their available marks.
+
+
+
+
+In Simple Terms:
+The program asks: "Based on how other students performed across ALL their tests, and knowing THIS student's pattern on their other tests, what would we expect them to score on the missing test?"
+
+It's like saying: "Student A scored 80-85 on everything else, and students who score in that range typically get around 82 on Test3, so let's predict 82 for Student A's missing Test3 mark."
