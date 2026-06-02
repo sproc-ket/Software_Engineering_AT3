@@ -1,0 +1,159 @@
+Testing Documentation
+======================
+
+1. Testing Objectives
+---------------------
+The goal of testing is to verify that the Student Mark Estimator System:
+- correctly loads valid CSV datasets,
+- accurately detects missing assessment marks,
+- estimates missing values using the correct regression or fallback logic,
+- exports corrected datasets without overwriting the original,
+- opens exported files when requested,
+- handles invalid inputs and error conditions gracefully,
+- and provides consistent UI behavior across theme modes.
+
+
+2. Test Categories
+------------------
+- Manual functional testing
+- Data validation testing
+- Error and edge-case testing
+- UI behavior testing
+- File export and open testing
+
+
+3. Test Environment
+-------------------
+- Windows desktop with Python installed
+- Required libraries available: `pandas`, `scikit-learn`, `tkinter`, `tkinterdnd2`
+- A sample CSV dataset with both complete and missing values
+- A sample empty CSV file and a sample malformed CSV file
+
+
+4. Test Cases
+--------------
+
+Test Case 1: Load Valid CSV File
+- Input: valid CSV file with at least 2 columns and some missing assessment values.
+- Steps:
+  1. Start the application.
+  2. Click "Browse CSV File".
+  3. Select the valid CSV.
+- Expected:
+  * File status label updates to the loaded filename.
+  * Log shows "Success: Loaded file successfully".
+  * Missing-items list populates with every missing assessment row.
+  * "Run ML Estimation" and "Run All Estimations" buttons become enabled.
+
+Test Case 2: Drag and Drop CSV File
+- Input: same valid CSV file.
+- Steps:
+  1. Drag the CSV onto the application window.
+- Expected:
+  * CSV loads successfully.
+  * The missing list and status text update correctly.
+
+Test Case 3: Load Empty CSV File
+- Input: empty CSV file.
+- Steps:
+  1. Browse to and select the empty CSV.
+- Expected:
+  * Error dialog appears: "The chosen CSV file is empty."
+  * Application remains stable and no buttons are enabled.
+
+Test Case 4: Load Malformed CSV or Invalid File
+- Input: non-CSV extension or malformed CSV content.
+- Steps:
+  1. Drag a .txt or invalid CSV onto the window.
+- Expected:
+  * Warning dialog appears for invalid file type if extension is wrong.
+  * If the file extension is CSV but content is malformed, a parse error dialog appears.
+
+Test Case 5: Single Item Estimation
+- Input: valid CSV with at least one missing value.
+- Steps:
+  1. Load the CSV.
+  2. Select one missing item in the list.
+  3. Click "Run ML Estimation".
+- Expected:
+  * Output log displays the selected student ID, assessment column, and estimated mark.
+  * Export report is created with `estimated_<original_filename>.csv`.
+  * "Open in Spreadsheet / Text Editor" button becomes enabled.
+  * The missing list is refreshed if the missing value is resolved.
+
+Test Case 6: Batch Estimation
+- Input: valid CSV with multiple missing values.
+- Steps:
+  1. Load the CSV.
+  2. Click "Run All Estimations".
+- Expected:
+  * Log displays progress for each missing entry.
+  * Export file is created once all missing values are estimated.
+  * Button to open the exported file becomes enabled.
+  * Missing list should refresh and become empty when complete.
+
+Test Case 7: Open Exported File
+- Input: exported CSV from a successful estimation.
+- Steps:
+  1. After export, click "Open in Spreadsheet / Text Editor".
+- Expected:
+  * The exported file opens in the default editor on the platform.
+  * Log records the action or the user sees the file in the editor.
+
+Test Case 8: No Selection Warning
+- Input: valid CSV with missing values.
+- Steps:
+  1. Load the CSV.
+  2. Do not select a list item.
+  3. Click "Run ML Estimation".
+- Expected:
+  * Warning dialog appears: "Please click and select a specific row item from the list box above."
+  * No estimation runs.
+
+Test Case 9: Theme Toggle
+- Input: any loaded dataset or empty app state.
+- Steps:
+  1. Click the theme toggle button.
+  2. Observe UI colors.
+- Expected:
+  * UI switches between dark and light mode.
+  * Widget text and log area remain readable.
+
+
+5. Regression and Edge-Case Tests
+---------------------------------
+- Test a CSV with only one assessment column beyond the student ID.
+  * Expect: fallback to class mean for missing values.
+- Test a CSV with only one complete student row and at least one missing value.
+  * Expect: fallback to class mean because linear regression cannot train.
+- Test a CSV where the target student row is missing multiple feature scores.
+  * Expect: fallback to the student row mean for the prediction.
+- Test a CSV with no missing values.
+  * Expect: log shows "Success: No missing grades found in this dataset." and estimation buttons remain disabled.
+
+
+6. Expected Output Verification
+-------------------------------
+For exported CSV files:
+- Confirm the file exists at the same directory as the original with prefix `estimated_`.
+- Confirm the original CSV file remains unchanged.
+- Confirm predicted values are filled in the cells that were missing.
+- Confirm the file is valid CSV that can be opened in a spreadsheet.
+
+
+7. Testing Notes
+----------------
+- Prefer using a fresh copy of the sample dataset for each test run to avoid state carryover.
+- Use a variety of CSV structures, including numeric-only and mixed string columns in the ID field.
+- Verify that all dialogs and log messages are clear and actionable.
+- If the application crashes during a test, note the error details and the exact dataset used.
+
+
+8. Future Automated Testing
+---------------------------
+- Add unit tests for `_load_csv_from_path()`, `scan_for_missing_data()`, `predict_mark()`, and
+  `export_results()`.
+- Use pytest to validate fallback behavior and regression output.
+- Create sample CSV fixtures for complete, partial, malformed, and empty datasets.
+- Add integration tests for the export file naming and existence checks.
+- Consider GUI automation for validating button states and menu interactions.
