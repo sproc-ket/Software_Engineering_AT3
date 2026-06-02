@@ -1,0 +1,158 @@
+Algorithm Pseudocode (Linear Regression)
+-----------------------------------------
+FUNCTION PredictMissingMark(student_data, historical_dataset):
+  X = historical_dataset.features (Midterm, Assignments, Attendance)
+  y = historical_dataset.target (Final Mark)
+  
+  IF length(historical_dataset) < 3:
+    RETURN FallbackToClassAverage(historical_dataset)
+  
+  model = FitLinearRegression(X, y)
+  prediction = model.predict(student_data.features)
+  
+  # Post-processing & Boundary Checks
+  prediction = Clamp(prediction, 0, 100)
+  prediction = RoundTo(prediction, 1)
+  
+  RETURN prediction
+END FUNCTION
+
+========================================================================
+
+DESIGN JUSTIFICATION
+---------------------
+Linear Regression was selected due to its easy-to-interpret style and
+fast performance on small-to-medium datasets. In an academic setting,
+teachers need to explain how a grade was calculated. Complex "black box"
+models like Neural Networks would be harder to justify to the stakeholders.
+
+
+DATA PRE-PROCESSING
+--------------------
+Handling null values by imputation or removal based on feature significance.
+Feature scaling applied to attendance vs. test marks.
+
+
+SYSTEM STRUCTURE
+-----------------
+1. Application Architecture
+   - The system is implemented as a single desktop application using
+     Python and Tkinter, with a single top-level controller class:
+     `MarkEstimatorApp`.
+   - `MarkEstimatorApp` manages UI construction, state management, data loading,
+     missing-value detection, prediction, results export, and theming.
+   - The program uses a Model-View-Controller-like separation internally:
+     UI components are created and updated separately from data processing and
+     prediction logic.
+
+2. Components
+   - UI Layer
+     * File selection controls and status label.
+     * Missing-data list box for presenting targets.
+     * Action buttons for single estimation, batch estimation, and file opening.
+     * Log output text area for status, progress, and prediction details.
+   - Data Layer
+     * `self.df`: loaded `pandas.DataFrame` representing the CSV dataset.
+     * `self.id_col`: header of the first column, treated as the student ID.
+     * `self.assessment_cols`: list of all assessment score columns.
+     * `self.missing_records`: list of dictionaries representing every missing
+       score target.
+   - Processing Layer
+     * CSV loading and validation.
+     * Missing value scanning and target generation.
+     * Prediction engine with fallback strategies.
+     * Export functionality.
+
+3. User Interface Layout
+   - Main window contains three primary sections:
+     1. Load Dataset
+        - "Browse CSV File" button.
+        - File status label showing loaded file name or "No file loaded.".
+     2. Select Missing Mark to Estimate
+        - A scrollable `Listbox` showing missing entries in the format:
+          "Student ID: <id> | Missing Task: <column>".
+     3. Actions and Results
+        - Buttons: "Run ML Estimation", "Run All Estimations", and
+          "Open in Spreadsheet / Text Editor".
+        - A log area displaying messages, results, and progress.
+   - The app supports drag-and-drop for CSV files via `tkinterdnd2`.
+   - A theme toggle switches between dark mode and light mode, updating colors
+     and widget styles dynamically.
+
+4. Data Flow
+   - Load CSV
+     * User browses or drops a CSV file.
+     * Application validates file existence, non-empty content, and at least
+       two columns.
+     * First column becomes `id_col`; remaining columns become
+       `assessment_cols`.
+   - Scan for Missing Data
+     * The app identifies rows where any assessment column is missing.
+     * Every missing cell is added to `self.missing_records` and displayed.
+     * If no missing values are found, estimation buttons are disabled.
+   - Estimate Missing Value
+     * User selects one target and clicks "Run ML Estimation".
+     * `predict_mark()` is invoked and returns a value plus metrics.
+     * Result is logged and written to an exported file.
+   - Batch Estimation
+     * User clicks "Run All Estimations" to process every missing target.
+     * Each missing entry is estimated and written into the in-memory DataFrame.
+     * A single output CSV is saved after processing all targets.
+   - Export / Open
+     * The corrected dataset is saved with prefix `estimated_`.
+     * The exported file can be opened using the OS default editor.
+
+5. Prediction Algorithm
+   - Input
+     * Target student ID and target assessment column.
+     * Feature columns are all other assessment columns.
+   - Fallback Logic
+     * If there is only one assessment column, use the target column mean.
+     * If there are fewer than two complete rows to train on, use the target
+       column mean.
+     * If the target student is missing scores for other feature columns,
+       use the student's own average across available feature scores.
+   - Linear Regression Path
+     * Train on rows with complete values for both the target and feature cols.
+     * Use `sklearn.linear_model.LinearRegression`.
+     * Predict the missing score for the target student.
+     * Clamp predicted value to `[0.0, 100.0]` and round to one decimal place.
+   - Metrics
+     * `Class Baseline Mean for <target_col>`.
+     * `Target Student Mean on other tests`.
+     * `Robust Sample Sizes Used for Training`.
+
+6. Error Handling and Validation
+   - File validation rejects empty CSV files and datasets with fewer than two
+     columns.
+   - Drag-and-drop rejects non-CSV file extensions.
+   - File parsing exceptions are caught and reported using modal error dialogs.
+   - Selection warnings prevent running estimation without a highlighted item.
+   - Export operations handle write failures and notify the user.
+   - Opening files uses OS-specific launch commands for Windows, macOS, and
+     Linux.
+
+7. External Dependencies
+   - `tkinter` and `tkinter.ttk` for GUI controls.
+   - `tkinterdnd2` for drag-and-drop file loading.
+   - `pandas` for CSV reading, DataFrame manipulation, and exporting.
+   - `scikit-learn` for `LinearRegression` prediction.
+   - `os`, `sys`, and `subprocess` for file path handling and editor launch.
+
+8. Design Decisions
+   - Use a desktop GUI because the application is intended for local grade file
+     maintenance.
+   - Keep the code in a single class for simplicity, while still separating
+     UI construction from prediction logic.
+   - Export with `estimated_` prefix to preserve the original dataset.
+   - Use linear regression for explainability, with clear fallback methods when
+     training data is insufficient.
+   - Provide both single-item and batch estimation modes for flexibility.
+
+9. Future Enhancements
+   - Add a preview table of the loaded dataset before estimation.
+   - Allow manual adjustment of estimated values before export.
+   - Support custom target column selection instead of assuming the first column
+     is always student ID.
+   - Add data normalization or scaling options for improved regression quality.
+   - Save user preferences for theme mode and last opened folder.

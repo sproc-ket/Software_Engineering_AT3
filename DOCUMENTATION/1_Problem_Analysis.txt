@@ -1,0 +1,154 @@
+Problem Analysis and Requirements Definition
+=================================================
+
+1. Problem Analysis
+-------------------
+
+Purpose:
+The Student Mark Estimator System is designed to help educators and administrators identify and 
+fill missing assessment marks in student datasets. The application must make it easy to load a 
+CSV grade file, detect missing values, estimate those values using a data-driven model, and
+export a corrected version of the dataset.
+
+Current Situation:
+- Teachers or administrators often maintain student assessment records in spreadsheet files.
+- Some student grades may be missing due to absent submissions, incomplete grading, or data
+  entry errors.
+- Missing values make overall analysis, reporting, and grade calculations incomplete or
+  unreliable.
+- Manual review and estimation of missing marks is time-consuming and inconsistent.
+
+Problem Statement:
+Educators need a reliable, user-friendly application that can load existing grade CSV files,
+identify missing marks, estimate appropriate values using historical data patterns, and export
+an updated dataset without overwriting the original file.
+
+Stakeholders:
+- Educators and teachers who track student performance.
+- School administrators who need accurate grade records.
+- Students indirectly affected by corrected grade estimations.
+- Developers maintaining the system.
+
+Goals:
+- Automatically detect missing grades in imported CSV datasets.
+- Estimate missing marks using a transparent machine learning approach.
+- Keep the interface simple and accessible for users with minimal technical experience.
+- Export corrected datasets safely using a prefixed filename.
+- Provide clear logs and feedback for each operation.
+
+Scope:
+In scope:
+- Loading CSV files via file dialog or drag-and-drop.
+- Detecting missing values in assessment columns.
+- Estimating missing marks using linear regression trained on complete student data.
+- Supporting single-item estimation and batch "run all" estimation.
+- Exporting results as a new CSV file.
+- Opening the exported file in the users default spreadsheet or text editor.
+
+Out of scope:
+- Editing individual cell values manually within the app.
+- Complex ensemble or neural network models.
+- Authentication, multi-user collaboration, or database integrations.
+- Real-time grade synchronization with external systems.
+
+Constraints:
+- Input data must be in CSV format.
+- The first column is treated as the student identifier.
+- At least one assessment column beyond the ID column is required.
+- Linear regression requires a minimum amount of complete data to train reliably.
+- The application is built using Python and Tkinter, so it must remain within desktop GUI
+  constraints.
+
+Assumptions:
+- Input CSV files contain a header row.
+- Missing grades are represented by empty values or NaNs.
+- Assessment columns are numeric and bounded between 0 and 100.
+- Students are represented by unique identifiers in the first column.
+
+
+2. Requirements Definition
+--------------------------
+
+Functional Requirements:
+
+FR1: Load Dataset
+- The application should allow the user to load a CSV file from disk using a browse dialog.
+- The application should allow the user to load a CSV file by dragging and dropping it into
+  the window.
+- The first column of the loaded CSV should be interpreted as the student ID column.
+- All remaining columns should be treated as assessment score columns.
+
+FR2: Missing Data Detection
+- The application should scan the loaded dataset for missing values in assessment columns.
+- The application should display a list of each missing assessment item, including student
+  ID and assessment column.
+- If no missing values exist, the application should disable estimation controls and notify
+  the user.
+
+FR3: Estimation
+- The application should allow the user to select a missing item and run a single estimation.
+- The application should allow the user to estimate all missing items in one batch operation.
+- The application should use linear regression to estimate missing marks when sufficient data
+  exists.
+- The application should clamp the estimated result between 0 and 100 and round to one decimal
+  place.
+- The application should show supporting metrics and context for each prediction.
+
+FR4: Export Results
+- The application should export the corrected dataset to a new CSV file with the prefix
+  `estimated_` added to the original filename.
+- The application should not overwrite the original input CSV file.
+- The application should allow the user to open the exported file in the default spreadsheet
+  or text editor.
+
+FR5: User Interface and Feedback
+- The application should display a status label showing the loaded filename or a message when
+  no file is loaded.
+- The application should present log output describing success, errors, and estimation results.
+- The application should provide a theme toggle for dark and light display modes.
+- The application should disable buttons that are not valid until required input is available.
+
+Non-functional Requirements:
+
+NFR1: Usability
+- The interface should be intuitive and suitable for users with limited technical experience.
+- Error messages should be clear and actionable.
+
+NFR2: Reliability
+- The application should handle invalid or malformed CSV files gracefully and provide an error
+  dialog.
+- Export operations should be protected against file write failures.
+
+NFR3: Performance
+- The application should load and scan datasets quickly for typical classroom-sized files.
+- Batch estimation should complete in a reasonable time for moderate datasets.
+
+NFR4: Maintainability
+- The implementation should remain modular so that data loading, scanning, prediction, and
+  export logic can be updated independently.
+- Comments and logs should support future debugging and enhancement.
+
+NFR5: Portability
+- The application should run on Windows desktops where Python, Tkinter, and required libraries
+  are installed.
+
+
+3. Success Criteria
+-------------------
+- A valid CSV file can be loaded and parsed without crashing.
+- Missing assessment entries are identified and listed correctly.
+- A selected missing mark can be estimated and exported successfully.
+- A full batch estimation can run and save a new CSV file.
+- The user can open the exported file from within the app.
+- Theme toggling updates the interface style consistently.
+
+4. Risks and Mitigations
+------------------------
+- Risk: Insufficient complete training data for linear regression.
+  Mitigation: Provide fallback messaging and require more complete rows before estimation.
+
+- Risk: Non-CSV files or malformed CSV format.
+  Mitigation: Validate file extension and catch parsing exceptions with user alerts.
+
+- Risk: Export file write permissions or path errors.
+  Mitigation: Wrap export logic in error handling and notify the user when export fails.

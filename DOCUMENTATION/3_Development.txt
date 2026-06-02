@@ -1,0 +1,103 @@
+Development Documentation
+========================
+
+1. Implementation Overview
+--------------------------
+The Student Mark Estimator System is implemented as a Python desktop application using Tkinter.
+The main program is contained in `CODE/mark_estimator_experimental.py` and is centered on a
+single controller class, `MarkEstimatorApp`.
+
+Key implementation elements:
+- `tkinter` and `ttk` for GUI widgets and layout.
+- `tkinterdnd2` for drag-and-drop CSV file loading.
+- `pandas` for CSV parsing, DataFrame management, missing value handling, and export.
+- `scikit-learn` `LinearRegression` for predicting missing marks.
+- `subprocess` and `sys` to open exported files with the OS default editor.
+
+
+2. Development Tasks and Workflow
+---------------------------------
+- Set up the main application class and root window initialization.
+- Build the UI components in `_create_widgets()`:
+  * File load controls and status label.
+  * Missing data list box with scrollbar.
+  * Buttons for estimation, batch processing, and opening exported files.
+  * Log output text area.
+- Implement theme switching and style updates in `_update_theme_styles()`.
+- Implement CSV loading with validation in `_load_csv_from_path()`.
+- Implement missing-data scanning in `scan_for_missing_data()`.
+- Implement single missing item estimation with `process_estimation()`.
+- Implement batch estimation with `process_all_estimations()`.
+- Implement prediction logic with fallbacks in `predict_mark()`.
+- Implement export logic in `export_results()`.
+- Implement OS-aware file opening in `open_exported_file()`.
+- Add user messaging and error handling for robustness.
+
+
+3. Source File Structure
+------------------------
+- `mark_estimator_experimental.py`
+  * import section
+  * `MarkEstimatorApp` class
+  * application initialization under `if __name__ == "__main__"`
+
+Inside `MarkEstimatorApp`:
+- `__init__()` initializes app state, theme mode, styles, and drag/drop support.
+- `_update_theme_styles()` applies colors, widget styles, and theme-specific behavior.
+- `_create_widgets()` constructs the GUI layout and widgets.
+- `log_message()` appends messages to the output log.
+- `load_csv()`, `handle_drop()`, `_load_csv_from_path()` manage file loading.
+- `scan_for_missing_data()` finds and lists missing assessment cells.
+- `process_estimation()` handles the selected missing score estimation path.
+- `process_all_estimations()` handles batch estimation for all missing scores.
+- `predict_mark()` chooses a prediction method and returns estimate metrics.
+- `export_results()` writes the corrected dataset to a new CSV file.
+- `open_exported_file()` launches the exported file in a system editor.
+
+
+4. Key Implementation Notes
+---------------------------
+- The first CSV column is assumed to be the student identifier.
+- All subsequent columns are treated as assessment scores.
+- The application uses `pd.read_csv()` for loading datasets.
+- Empty or malformed CSV files are rejected with user-facing error dialogs.
+- Missing data is detected by checking `DataFrame.isna().any(axis=1)` on assessment columns.
+- When training data is insufficient, prediction falls back to simple averages.
+- Estimates are clamped between 0 and 100 and rounded to one decimal place.
+- The exported file is prefixed with `estimated_` to preserve the original input.
+- `self.last_exported_file` stores the last generated file path.
+- The "Open in Spreadsheet / Text Editor" button is enabled only after successful export.
+
+
+5. Testing and Validation
+-------------------------
+Manual testing should include:
+- Loading a valid CSV file with complete and missing values.
+- Drag-and-drop loading of a CSV file.
+- Loading an empty CSV and verifying the error dialog.
+- Attempting to load a non-CSV file via drag-and-drop and verifying rejection.
+- Selecting a missing item and running single estimation.
+- Running batch estimation and checking exported file contents.
+- Opening the exported file from the app.
+- Switching between dark and light themes and verifying UI updates.
+- Verifying that the original CSV is not modified.
+
+
+6. Known Limitations
+--------------------
+- The app assumes the first column is always the student identifier.
+- Prediction is based on linear regression only and may not be optimal for all datasets.
+- There is no manual edit mode for individual data cells inside the UI.
+- The application does not persist user preferences across sessions.
+- The UI does not currently show a full data table preview.
+
+
+7. Future Development Ideas
+---------------------------
+- Add a dataset preview table for the loaded CSV.
+- Allow the user to choose which column is the student identifier.
+- Add manual editing of individual predicted values before export.
+- Add more advanced regression options or model selection.
+- Include a configuration file for default export location and theme.
+- Implement automated testing for data loading and prediction behavior.
+- Add progress indicators for large batch estimations.
