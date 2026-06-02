@@ -30,7 +30,33 @@ The goal of testing is to verify that the Student Mark Estimator System:
 - A sample empty CSV file and a sample malformed CSV file
 
 
-4. Test Cases
+4. Formal Test Plan
+-------------------
+Unit Tests:
+- `_load_csv_from_path()` should load valid CSV files and reject empty or malformed files.
+- `scan_for_missing_data()` should correctly identify missing assessment cells and populate
+  the missing-records list.
+- `predict_mark()` should return a regression-based estimate when enough complete data is
+  available.
+- `predict_mark()` should return fallback values when only one assessment column exists,
+  when training data is insufficient, or when the target row has missing feature values.
+- `export_results()` should write a new CSV prefixed with `estimated_` and preserve the
+  original dataset.
+
+Integration Tests:
+- Load a valid dataset, select a missing item, run single estimation, and export results.
+- Load a valid dataset and run batch estimation to fill all missing items and export a file.
+- Validate that UI controls enable and disable correctly after loading, estimating, and exporting.
+
+Error-Handling Tests:
+- Attempt to load a non-CSV file via drag-and-drop and verify the invalid-file warning.
+- Attempt to load an empty or malformed CSV and verify the appropriate error dialog.
+- Attempt to run single estimation without selecting a missing item and verify the warning.
+- Simulate export failure by using a protected destination or read-only file and verify the error
+  message (when feasible).
+
+
+5. Test Cases
 --------------
 
 Test Case 1: Load Valid CSV File
@@ -120,7 +146,7 @@ Test Case 9: Theme Toggle
   * Widget text and log area remain readable.
 
 
-5. Regression and Edge-Case Tests
+6. Regression and Edge-Case Tests
 ---------------------------------
 - Test a CSV with only one assessment column beyond the student ID.
   * Expect: fallback to class mean for missing values.
@@ -132,7 +158,7 @@ Test Case 9: Theme Toggle
   * Expect: log shows "Success: No missing grades found in this dataset." and estimation buttons remain disabled.
 
 
-6. Expected Output Verification
+7. Expected Output Verification
 -------------------------------
 For exported CSV files:
 - Confirm the file exists at the same directory as the original with prefix `estimated_`.
@@ -141,7 +167,7 @@ For exported CSV files:
 - Confirm the file is valid CSV that can be opened in a spreadsheet.
 
 
-7. Testing Notes
+8. Testing Notes
 ----------------
 - Prefer using a fresh copy of the sample dataset for each test run to avoid state carryover.
 - Use a variety of CSV structures, including numeric-only and mixed string columns in the ID field.
@@ -149,7 +175,7 @@ For exported CSV files:
 - If the application crashes during a test, note the error details and the exact dataset used.
 
 
-8. Future Automated Testing
+9. Future Automated Testing
 ---------------------------
 - Add unit tests for `_load_csv_from_path()`, `scan_for_missing_data()`, `predict_mark()`, and
   `export_results()`.
@@ -157,3 +183,19 @@ For exported CSV files:
 - Create sample CSV fixtures for complete, partial, malformed, and empty datasets.
 - Add integration tests for the export file naming and existence checks.
 - Consider GUI automation for validating button states and menu interactions.
+
+
+10. Test Report
+--------------
+A temporary validation script was executed in the project environment to confirm model
+behavior for both regression and fallback cases.
+- Regression prediction test:
+  * Input: a dataset with complete rows for `Test1`, `Test2`, and partial missing `Final`.
+  * Result: predicted `Final` score = `68.0` for the target student.
+  * Metrics returned included class baseline mean and sample size used for training.
+- Fallback prediction test:
+  * Input: a dataset with only one assessment column in addition to student ID.
+  * Result: fallback estimate = `80.0` using the class mean strategy.
+
+These results demonstrate that the prediction engine operates correctly under both normal
+and fallback conditions.

@@ -1,0 +1,69 @@
+Evaluation Report
+=================
+
+1. Effectiveness
+----------------
+- The application successfully loads CSV datasets and identifies missing assessment values.
+- The missing-data list clearly presents missing entries by student ID and assessment column.
+- The single-item estimation flow uses regression and fallback logic to estimate missing marks
+  and returns a usable predicted score.
+- The batch estimation feature processes multiple missing entries in one pass and exports a
+  complete corrected dataset.
+- Exported files are saved with the prefix `estimated_`, preserving the original dataset.
+- The UI provides good user feedback through log messages and modal dialogs.
+- Theme switching works consistently and updates both widget styles and log area colors.
+
+2. Limitations
+---------------
+- The application assumes the first CSV column is a unique student identifier; it does not
+  support explicit ID column selection.
+- The prediction model is limited to linear regression and simple average fallbacks, which may
+  not be optimal for complex grading patterns.
+- If the target student is missing values in multiple feature columns, the fallback to student
+  mean may produce lower-quality estimates.
+- No manual correction interface exists for users to adjust estimates before export.
+- The current UI does not display a full dataset preview for review before estimation.
+- There is no persistence of user preferences (such as theme mode or last opened folder) between
+  sessions.
+- Error handling is present but could be expanded to detect additional data quality issues like
+  non-numeric score entries or inconsistent row lengths.
+
+3. Improvements
+----------------
+- Add an explicit column selection step so users can choose the student identifier and target
+  score columns.
+- Add a dataset preview table to allow users to inspect loaded data before running estimates.
+- Introduce more advanced model options, such as ridge regression, k-nearest neighbors, or
+  decision trees, with a model selection control.
+- Implement manual review and override of suggested estimated values before saving.
+- Add validation for numeric-only assessment columns and provide clearer reports for malformed
+  data.
+- Persist user settings such as theme preference and last opened folder path.
+- Add unit tests and integration tests for data loading, prediction fallbacks, export behavior,
+  and error conditions.
+- Improve export handling by supporting automatic folder selection and naming conflict resolution.
+- Enhance logging with timestamped entries and an optional exportable operation report.
+
+4. Social and Ethical Considerations
+------------------------------------
+- Predicted grades should be treated as estimates and not automatic final scores. Human review
+  is required before any estimate is accepted into official records.
+- The model is trained only on available assessment data, which may reflect existing grading
+  patterns or incomplete sampling. This creates a risk of reinforcing bias present in the data.
+- Missing data is often not random: absent or underperforming students may be overrepresented in
+  missing records, and blind prediction could unfairly alter their outcomes.
+- The application avoids using demographic or personal information as features, relying instead
+  only on assessment scores to reduce privacy and fairness risks.
+- Mitigation strategies include preserving the original dataset, making the export file clearly
+  separate, documenting model limitations, and encouraging manual validation of any estimates.
+- Users should be cautioned that model-based estimates are a support tool and not a substitute
+  for professional academic judgment.
+
+5. Overall Assessment
+---------------------
+The Student Mark Estimator System is functional for its core purpose of identifying missing
+assessment marks and populating them with estimated values. It is effective for typical
+classroom datasets, offers a usable interface, and provides both single and batch estimation
+modes. However, the solution is best suited for small to medium datasets and would benefit
+from stronger validation, more flexible column handling, and richer prediction options for
+production use.

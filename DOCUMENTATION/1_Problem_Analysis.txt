@@ -23,6 +23,12 @@ Educators need a reliable, user-friendly application that can load existing grad
 identify missing marks, estimate appropriate values using historical data patterns, and export
 an updated dataset without overwriting the original file.
 
+Requirements Statement:
+The system shall allow educators to load a student grade CSV, identify missing assessment
+values, estimate those values using a transparent predictive process, and export the corrected
+dataset to a new file while preserving the original data. The system shall provide visual
+feedback, prevent invalid operations, and support both single-item and batch estimation.
+
 Stakeholders:
 - Educators and teachers who track student performance.
 - School administrators who need accurate grade records.

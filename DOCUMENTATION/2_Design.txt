@@ -21,16 +21,47 @@ END FUNCTION
 
 DESIGN JUSTIFICATION
 ---------------------
-Linear Regression was selected due to its easy-to-interpret style and
-fast performance on small-to-medium datasets. In an academic setting,
-teachers need to explain how a grade was calculated. Complex "black box"
-models like Neural Networks would be harder to justify to the stakeholders.
+Linear Regression was selected because it is transparent, interpretable, and well-suited to
+small datasets of numeric assessment scores. In this application, educators need to understand
+and trust how missing marks are estimated, so a model with clear behavior was preferred.
+Linear Regression also performs efficiently on low-dimensional data and integrates directly
+with the Python scientific stack already used in the project.
+
+This design avoids more complex machine learning approaches because the dataset is typically
+small, the goal is prediction of numeric scores, and users require easy explanation of the
+results. The application also includes fallback logic to ensure stable output when the data
+quality is insufficient for reliable regression training.
 
 
 DATA PRE-PROCESSING
 --------------------
-Handling null values by imputation or removal based on feature significance.
-Feature scaling applied to attendance vs. test marks.
+- Input validation checks that the CSV is not empty and contains at least two columns.
+- The first column is assumed to be the student identifier; all other columns are treated as
+  numeric assessment scores.
+- Missing values are detected with `DataFrame.isna()` on assessment columns.
+- Training data is assembled by dropping rows where the target or required feature columns
+  are missing, using `df.dropna(subset=[target_col] + feature_cols)`.
+- No explicit feature scaling is applied because assessment scores are assumed to share a
+  common 0-100 grading scale.
+- When there is insufficient complete training data, the application uses mean-based fallbacks
+  instead of attempting to train an unreliable model.
+- The export step writes the updated DataFrame to a new CSV file prefixed with
+  `estimated_`.
+
+
+MODEL SELECTION
+----------------
+The selected model is `sklearn.linear_model.LinearRegression`.
+
+Justification:
+- The task is numeric prediction of missing assessment scores from other numeric scores.
+- Linear regression is a well-understood model that is easy to explain to educators.
+- The model performs well on small-to-medium datasets and requires minimal configuration.
+- It is computationally efficient, which is important for a desktop application.
+- Alternative models such as decision trees, k-nearest neighbors, or neural networks were not
+  chosen because they introduce additional complexity and are less transparent for users.
+- The app also includes fallback logic for cases with too few complete rows, which preserves
+  reliability when the dataset does not support regression training.
 
 
 SYSTEM STRUCTURE
