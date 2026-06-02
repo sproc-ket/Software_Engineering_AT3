@@ -92,7 +92,7 @@ class MarkEstimatorApp:
             # Set the inner container surfaces to a pure bright white canvas layout
             self.card_bg = "#FFFFFF"
             # Set the primary text color to a stark, legible off-black ink shade
-            self.fg_color = "#202020"
+            self.fg_color = "#000000"
             # Set the primary highlight accent borders to a traditional Windows blue color tone
             self.accent_color = "#005FB8"
             # Set the interactive button backgrounds to a light cloud gray color tone
@@ -102,7 +102,7 @@ class MarkEstimatorApp:
             # Set disabled widget background indicators to a soft gray concrete shade
             self.disabled_bg = "#EAEAEA"
             # Set disabled widget foreground text fields to a faded silver gray shade
-            self.disabled_fg = "#A0A0A0"
+            self.disabled_fg = "#000000"
             # Set successful data notification labels to a classic standard green text color
             self.status_text = "#008000"
             # Define the visual text instruction prompt layout mapping for the header button

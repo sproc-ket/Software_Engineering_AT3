@@ -73,3 +73,6 @@ WEDNESDAY 04/06/2026
 
 1.3.1.1
 - Fixed typo in README.md
+
+1.3.1.2
+- Fixed readability issue in light mode by changing grey text to black
