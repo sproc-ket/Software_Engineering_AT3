@@ -43,7 +43,7 @@ In scope:
 - Estimating missing marks using linear regression trained on complete student data.
 - Supporting single-item estimation and batch "run all" estimation.
 - Exporting results as a new CSV file.
-- Opening the exported file in the users default spreadsheet or text editor.
+- Opening the exported file in the users default spreadsheet or text editor.
 
 Out of scope:
 - Editing individual cell values manually within the app.
