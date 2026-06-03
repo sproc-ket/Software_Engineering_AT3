@@ -113,3 +113,8 @@ WEDNESDAY 04/06/2026
   the instuctions for running the program
 - Fixed typos in REAME.md
 - Added more dividers in changelog.txt to improve readability
+------------------------------------------------------------------------------------------------
+1.3.2.3
+- Fixed formatting issue in README.md
+- Added redundant package.cmd to .gitignore and moved to a non user-facing folder
+  to avoid confusion among users during the setup process

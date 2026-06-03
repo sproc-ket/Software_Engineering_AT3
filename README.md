@@ -44,14 +44,14 @@ Once dependencies are installed, run:
 
 FEATURES:
 ---------
-✓ Dark/Light theme toggle
-✓ Browse for CSV files OR drag & drop CSV files directly onto the window
-✓ Automatically detects missing student marks
-✓ Run individual estimations by selecting from the list
-✓ Run ALL estimations at once with the "Run All Estimations" button
-✓ Machine Learning predictions using Linear Regression
-✓ Exports results to a new CSV file (prefixed with "estimated_")
-✓ Open exported files directly in Notepad/TextEdit
+- Dark/Light theme toggle
+- Browse for CSV files OR drag & drop CSV files directly onto the window
+- Automatically detects missing student marks
+- Run individual estimations by selecting from the list
+- Run ALL estimations at once with the "Run All Estimations" button
+- Machine Learning predictions using Linear Regression
+- Exports results to a new CSV file (prefixed with "estimated_")
+- Open exported files directly in Notepad/TextEdit
 
 
 HOW TO USE:
