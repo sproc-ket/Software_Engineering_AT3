@@ -7,57 +7,57 @@ WEDNESDAY 13/05/2026
 - Added project_gantt_chart.xlsx
 - Added standardised document naming
 - Fixed changelog formatting
------------------------------------------------------------------------------------------------
+===============================================================================================
 THURSDAY 14/05/2026
 
 1.0.0.0
 - Finished first prototype of main program
 - Adjusted file name formatting
 - Tested program with placeholder DATA
------------------------------------------------------------------------------------------------
+===============================================================================================
 FRIDAY 15/5/2026
 
 1.2.0.0
 Friday 
 - Added experimental GUI version, currently unstable and should not be used until it is complete
 - Adjusted changelog and README, including README file extension from .txt to .md
-
+------------------------------------------------------------------------------------------------
 1.2.1.0
 - GUI version is now the main version of this program
 - Adjusted changelog and README
-
+------------------------------------------------------------------------------------------------
 1.2.2.0
 - Added a temporary experimental program where things can be tested without impacting 
   the stable program
 - Added a new file with in-line comments to every line of code
 - Added new dark theme button for more customisability
-
+------------------------------------------------------------------------------------------------
 1.2.2.1
 - Added a "run all" button to mark_estimator_experimental.py
-
+------------------------------------------------------------------------------------------------
 1.2.3.0
 - Committed changes relating to the "run all" button to mark_estimator_FULL COMMENTS.py
   and mark_estimator.py
-
+------------------------------------------------------------------------------------------------
 1.2.3.1
 - Overhauled README.txt including istructions on package installations, troubleshooting,
   general instructions, features and dependancies
 - Added drag-and-drop method of file upload to mark_estimator_experimental.py
-
+------------------------------------------------------------------------------------------------
 1.2.3.2
 - Minor edits to some comments
-
+------------------------------------------------------------------------------------------------
 1.2.3.3
 - Committed drag-and-drop code changes from mark_experimental_experimental.py to
   mark_estimator.py and mark_estimator_FULL COMMENTS
 - Adjusted README.md
-
+------------------------------------------------------------------------------------------------
 1.2.3.4
 - Fixed an issue where an error occurs when trying to open updated file
-
+------------------------------------------------------------------------------------------------
 1.2.3.5
 - Updated instructional text: "text editor" --> "editor"
------------------------------------------------------------------------------------------------
+================================================================================================
 WEDNESDAY 04/06/2026
 
 1.3.0.0
@@ -67,42 +67,49 @@ WEDNESDAY 04/06/2026
 - Added 3_Development.txt and full development overview
 - Added an overview of how the program works in README.md
 - Replaced placeholder data file with correct data file
-
+------------------------------------------------------------------------------------------------
 1.3.1.0
 - Added 4_Testing.txt and full project testing parameters including test cases
-
+------------------------------------------------------------------------------------------------
 1.3.1.1
 - Fixed typo in README.md
-
+------------------------------------------------------------------------------------------------
 1.3.1.2
 - Fixed readability issue in light mode by changing grey text to black
-
+------------------------------------------------------------------------------------------------
 1.3.1.3
 - Fixed changelog name [S] -- changelog.txt ===> changelog.txt
-
+------------------------------------------------------------------------------------------------
 1.3.2.0
-  1_Problem_Analysis.txt: 
-  - Added a formal Requirements Statement section.
+- Added the following documentation:
+  - 1_Problem_Analysis.txt: 
+    - Added a formal Requirements Statement section.
 
-  2_Design.txt:
-  - Expanded Design Justification with clearer reasoning.
-  - Added more Data Pre-processing details.
-  - Added a new ML Model Selection section with extra justification.
+  - 2_Design.txt:
+    - Expanded Design Justification with clearer reasoning.
+    - Added more Data Pre-processing details.
+    - Added a new ML Model Selection section with extra justification.
 
-  4_Testing.txt:
-  - Added a formal Test Plan covering unit, integration, and error-handling tests.
-  - Added a Test Report with sample evidence:
-    - Regression prediction result 68.0
-    - Fallback mean result 80.0
+  - 4_Testing.txt:
+    - Added a formal Test Plan covering unit, integration, and error-handling tests.
+    - Added a Test Report with sample evidence:
+      - Regression prediction result 68.0
+      - Fallback mean result 80.0
 
-  5_Evaluation.txt:
-  - Added Social and Ethical Considerations covering bias, fairness, and mitigation.
-
+  - 5_Evaluation.txt:
+    - Added Social and Ethical Considerations covering bias, fairness, and mitigation.
+------------------------------------------------------------------------------------------------
 1.3.2.0
 - Added presentation_scaffold.txt (3–5 minute presentation outline)
 - Added package.cmd (packaging helper; safe to run locally)
 - Added .gitignore to exclude packaging and common Python/editor artifacts
-
+------------------------------------------------------------------------------------------------
 1.3.2.1
 - Renamed mark_estimator_experimental.exe to MarkEstimatorApp.exe
 - Moved MarkEstimatorApp.exe to a folder visible to the user
+------------------------------------------------------------------------------------------------
+1.3.2.2
+- Updated README.md to support the new executable file and added the option to
+  the instuctions for running the program
+- Fixed typos in REAME.md
+- Added more dividers in changelog.txt to improve readability

@@ -1,12 +1,18 @@
 This is my Software Engineering Year 12 Assessment Task 3, all relevant files are attached.
 
-File naming scheme:
-[D] = DATA
-[C] = CODE
-[S] = SUPPORTING FILES
-
 STUDENT MARK ESTIMATOR - INSTALLATION & USAGE INSTRUCTIONS
-=============================================================
+===========================================================
+
+THERE ARE 2 OPTIONS FOR RUNNING THIS PROGRAM, READ THIS
+========================================================
+
+OPTION 1: run MarkEstimatorApp.exe directly from the folder which will load it without any other action on your part
+
+OR
+
+OPTION 2: run the app through an IDE such as Visual Studio Code. Instructions for manual installation are below:
+
+-------------------------------------------------------------------------------------------------
 
 REQUIRED DEPENDENCIES:
 ----------------------
@@ -22,7 +28,7 @@ Run the following command in your terminal/command prompt:
 
     pip install pandas scikit-learn tkinterdnd2
 
-Or install them one by one:
+OR install them one by one:
 
     pip install pandas
     pip install scikit-learn
