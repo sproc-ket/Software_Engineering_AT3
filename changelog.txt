@@ -102,3 +102,7 @@ WEDNESDAY 04/06/2026
 - Added presentation_scaffold.txt (3–5 minute presentation outline)
 - Added package.cmd (packaging helper; safe to run locally)
 - Added .gitignore to exclude packaging and common Python/editor artifacts
+
+1.3.2.1
+- Renamed mark_estimator_experimental.exe to MarkEstimatorApp.exe
+- Moved MarkEstimatorApp.exe to a folder visible to the user
