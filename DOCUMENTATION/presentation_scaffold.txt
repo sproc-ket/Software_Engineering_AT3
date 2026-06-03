@@ -1,0 +1,47 @@
+3–5 Minute Presentation Scaffold
+=================================
+
+Slide 1: Introduction
+- Title: Student Mark Estimator System
+- Briefly introduce the problem: many grade spreadsheets have missing assessment scores.
+- Explain the goal: help educators quickly identify missing marks and estimate a reasonable value.
+
+Slide 2: The Problem
+- Teachers and administrators use CSV grade files to track student performance.
+- Missing values occur when assessments are not submitted, grading is incomplete, or data is entered incorrectly.
+- Missing marks make reports unreliable and slow down decision-making.
+- Our software solves this by detecting missing entries and estimating them automatically.
+
+Slide 3: Software Automation
+- The solution is a desktop application built in Python with a GUI.
+- Users load a CSV file either by browsing or dragging it into the app.
+- The app scans the data, lists every missing score, and enables estimation controls.
+- It automates the workflow: load data, identify gaps, estimate values, and export a corrected CSV.
+- This removes manual spreadsheet editing and reduces the risk of human error.
+
+Slide 4: How the Machine Learning Model Makes Predictions
+- The app uses a machine learning model to estimate missing marks.
+- Specifically, it uses linear regression on existing assessment scores.
+- To predict one missing score, it trains on students who have complete data for that assessment and the other columns.
+- If there is not enough data, it falls back to simpler methods like the class mean or the students average.
+- The prediction is then clamped between 0 and 100 and rounded to one decimal place.
+
+Slide 5: Example Prediction Flow
+- Example: predict a missing final exam score using other test scores.
+- The app finds rows with all required scores, trains the model, and estimates the missing value.
+- It also shows supporting metrics like class baseline mean and sample size.
+- The result is saved in a new file prefixed with `estimated_` so the original stays intact.
+
+Slide 6: Social / Ethical Issue
+- One important ethical issue is fairness and bias in grade estimation.
+- If missing data is not random, predictions may reinforce existing patterns in the dataset.
+- For example, absent or underperforming students might be disproportionately affected.
+- The app avoids demographic features, but users still need to treat estimates as suggestions.
+- Human review is essential: estimated grades should not be accepted automatically.
+
+Slide 7: Conclusion
+- The Student Mark Estimator System improves consistency and speed for handling missing grades.
+- It uses software automation to move from manual CSV editing to a guided workflow.
+- It uses linear regression with fallback rules to produce reasonable estimates.
+- Ethical caution: estimated scores support users, but should be validated by educators.
+- End with a final statement: this solution is a practical tool for maintaining cleaner grade records.
