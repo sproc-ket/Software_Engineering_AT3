@@ -38,8 +38,7 @@ OR install them one by one:
 RUNNING THE APPLICATION:
 ------------------------
 Once dependencies are installed, run:
-
-    python mark-estimator-app.py
+    mark_estimator_experimental.py
 
 
 FEATURES:

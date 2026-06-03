@@ -36,6 +36,10 @@ class MarkEstimatorApp:
         self.file_path = None
         # Initialize an empty variable to hold the output path string of the estimated file export
         self.last_exported_file = None
+        # Initialize an empty variable to hold the current save path when users save results
+        self.saved_file_path = None  # path user saved to (reused by Save)
+        # Track whether there are unsaved estimated results available for saving
+        self.has_unsaved_results = False  # True when estimation results are present but not written
         # Initialize an empty variable to record the header name of the student ID column
         self.id_col = None
         # Initialize an empty list array designed to store the names of all assessment columns
@@ -300,6 +304,24 @@ class MarkEstimatorApp:
         # Position the Run All button in the middle third of the action row grid box
         self.btn_run_all.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
 
+        # Build the save button to write updated estimated results to disk
+        self.btn_save = ttk.Button(
+            btn_grid,
+            text="Save Results",
+            command=self.save_results,
+            state=tk.DISABLED,
+        )
+        self.btn_save.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))  # place Save button in the action row
+
+        # Build the save-as button to let the user choose the export location every time
+        self.btn_save_as = ttk.Button(
+            btn_grid,
+            text="Save As...",
+            command=self.save_results_as,
+            state=tk.DISABLED,
+        )
+        self.btn_save_as.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))  # place Save As button next to Save
+
         # Build the custom background plain-text file viewer application execution tool launcher
         self.btn_open_file = ttk.Button(
             btn_grid,
@@ -372,7 +394,7 @@ class MarkEstimatorApp:
             return
 
         # Call the existing load_csv logic by simulating a file selection
-        # We'll create a modified version that accepts a path parameter
+        # Create a modified version that accepts a path parameter
         self._load_csv_from_path(file_path)
 
     # Internal helper method to load CSV from a specific path (used by both browse and drag-drop)
@@ -380,7 +402,7 @@ class MarkEstimatorApp:
         # Initialize a protective execution monitoring block to isolate structural parsing bugs
         try:
             # Command the pandas engine library to process and map target file strings into matrices
-            temp_df = pd.csv = pd.read_csv(selected_file)
+            temp_df = pd.read_csv(selected_file)
 
             # Verification rule: stop execution if the selected data sheet contains zero entries
             if temp_df.empty:
@@ -428,6 +450,13 @@ class MarkEstimatorApp:
 
             # Scan the active document fields to flag missing data values immediately
             self.scan_for_missing_data()
+            # Clear any previous saved/exported state when a new CSV is loaded
+            self.saved_file_path = None
+            self.last_exported_file = None
+            self.has_unsaved_results = False
+            self.btn_save.config(state=tk.DISABLED)  # disable Save until new estimations are made
+            self.btn_save_as.config(state=tk.DISABLED)  # disable Save As until usable results exist
+            self.btn_open_file.config(state=tk.DISABLED)  # disable Open until a saved file exists
 
         # Handle runtime issues like open file locks safely to prevent software crashes
         except Exception as e:
@@ -457,6 +486,13 @@ class MarkEstimatorApp:
             # Keep calculation triggers locked since there are no values left to resolve
             self.btn_estimate.config(state=tk.DISABLED)
             self.btn_run_all.config(state=tk.DISABLED)
+            if self.has_unsaved_results:
+                self.btn_save.config(state=tk.NORMAL)  # enable Save when there are unsaved results
+                self.btn_save_as.config(state=tk.NORMAL)  # enable Save As to choose a save location
+            else:
+                self.btn_save.config(state=tk.DISABLED)  # keep Save disabled if there's nothing to save
+                self.btn_save_as.config(state=tk.DISABLED)  # keep Save As disabled if no results
+            self.btn_open_file.config(state=tk.NORMAL if self.last_exported_file else tk.DISABLED)  # open only if a file exists
             # Exit early since there is no missing work left to calculate
             return
 
@@ -478,8 +514,15 @@ class MarkEstimatorApp:
                     )
 
         # Unlock the estimation buttons since there are now valid target items available to process
-        self.btn_estimate.config(state=tk.NORMAL)
-        self.btn_run_all.config(state=tk.NORMAL)
+        self.btn_estimate.config(state=tk.NORMAL)  # allow individual estimation once missing items exist
+        self.btn_run_all.config(state=tk.NORMAL)  # allow batch estimation as well
+        if self.has_unsaved_results:
+            self.btn_save.config(state=tk.NORMAL)  # keep Save enabled if there are unsaved results
+            self.btn_save_as.config(state=tk.NORMAL)  # keep Save As enabled for choosing save location
+        else:
+            self.btn_save.config(state=tk.DISABLED)  # disable Save until the new results exist
+            self.btn_save_as.config(state=tk.DISABLED)  # disable Save As until results exist
+        self.btn_open_file.config(state=tk.NORMAL if self.last_exported_file else tk.DISABLED)  # open only if saved file exists
         # Print a status summary to update the user on the total number of empty items found
         self.log_message(
             f"Found {len(self.missing_records)} missing item(s). Highlight one above to process, or click 'Run All Estimations'."
@@ -532,8 +575,12 @@ class MarkEstimatorApp:
         # Print the closing divider element to wrap up the calculation results log entry
         self.log_message("=========================================")
 
-        # Export the updated data values out into an external file sheet immediately
-        self.export_results(target_id, target_col, predicted_mark)
+        # Enable save controls so the user can write the updated dataset to disk
+        self.btn_save.config(state=tk.NORMAL)  # enable Save so the user can write to project root
+        self.btn_save_as.config(state=tk.NORMAL)  # enable Save As to choose a custom path
+        self.has_unsaved_results = True  # mark that results exist and are not yet saved
+        self.btn_open_file.config(state=tk.DISABLED)  # opening not allowed until file is saved
+        self.saved_file_path = None  # reset any previously saved path to force fresh save
 
     # NEW: Process all missing estimations in one batch operation
     def process_all_estimations(self):
@@ -581,48 +628,28 @@ class MarkEstimatorApp:
 
             self.log_message(f"    -> Estimated Mark: {predicted_mark}\n")
 
-        # Export all results to a single file
-        dir_name, file_name = os.path.split(self.file_path)
-        output_path = os.path.join(dir_name, f"estimated_{file_name}")
+        # Enable save controls so the user can write the batch results to disk
+        self.btn_save.config(state=tk.NORMAL)  # enable Save for batch results default saving
+        self.btn_save_as.config(state=tk.NORMAL)  # enable Save As for custom location
+        self.has_unsaved_results = True  # flag that batch results are unsaved
+        self.btn_open_file.config(state=tk.DISABLED)  # do not allow open until saved
+        self.saved_file_path = None  # clear any previous saved path so Save uses root
 
-        try:
-            # Write the updated DataFrame to CSV
-            self.df.to_csv(output_path, index=False)
-
-            # Update the last exported file tracker
-            self.last_exported_file = output_path
-            # Enable the file viewer button
-            self.btn_open_file.config(state=tk.NORMAL)
-
-            # Print summary information
-            self.log_message("=" * 60)
-            self.log_message("           BATCH ESTIMATION COMPLETE")
-            self.log_message("=" * 60)
-            self.log_message(f"Total marks estimated: {total_count}")
-            self.log_message(f"\nResults exported to:\n -> {output_path}")
-            self.log_message("=" * 60)
-
-            # Show success popup
-            messagebox.showinfo(
-                "Batch Estimation Complete",
-                f"Successfully estimated {total_count} missing mark(s)\n\nFile written to:\n{output_path}\n\nYou can now open it in your editor."
-            )
-
-            # Re-scan to update the missing data list (should be empty or reduced)
-            self.scan_for_missing_data()
-
-        except Exception as e:
-            messagebox.showerror(
-                "Export Failure Error",
-                f"Could not export results:\n{str(e)}"
-            )
+        # Print summary information after calculations complete
+        self.log_message("=" * 60)
+        self.log_message("           BATCH ESTIMATION COMPLETE")
+        self.log_message("=" * 60)
+        self.log_message(f"Total marks estimated: {total_count}")
+        self.log_message("=" * 60)
+        self.log_message("Please use Save or Save As to write the results to a CSV file.")
+        self.scan_for_missing_data()
 
     # Build regression models on clean slices of data to predict missing values
     def predict_mark(self, target_id, target_col):
         # Create a list of feature columns by omitting the target column from the assessments list
         feature_cols = [c for c in self.assessment_cols if c != target_col]
 
-        # Safety Fallback 1: If there is only one assessment column, we can't use multi-feature ML
+        # Safety Fallback 1: If there is only one assessment column, multi-feature ML can't be used
         if not feature_cols:
             # Calculate the class average score for this single category column instead
             historical_avg = round(self.df[target_col].mean(), 1)
@@ -632,7 +659,7 @@ class MarkEstimatorApp:
         # Extract all complete rows that contain scores for both features and the target column
         train_data = self.df.dropna(subset=[target_col] + feature_cols)
 
-        # Safety Fallback 2: We need at least two complete rows of student data to train a linear model
+        # Safety Fallback 2: the program must have at least two complete rows of student data to train a linear model
         if len(train_data) < 2:
             # Fall back to using the simple class historical average for this column category
             historical_avg = round(self.df[target_col].mean(), 1)
@@ -688,6 +715,99 @@ class MarkEstimatorApp:
         # Return the final calculated prediction score alongside our supporting context details
         return final_pred, metrics
 
+    def _choose_export_path(self, default_name):
+        # Prompt the user with a Save As dialog and return the chosen path (or empty string)
+        return filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV Files", "*.csv")],
+            initialfile=default_name,
+            title="Save estimated results as...",
+        )
+
+    def _project_root(self):
+        """Return the repository root based on this source file location.
+
+        Falls back to current working directory if __file__ is unavailable.
+        """
+        try:
+            # Derive project root by walking two levels up from this file location
+            return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        except Exception:
+            # If __file__ is not set, use current working directory as a fallback
+            return os.getcwd()
+
+    def _save_to_path(self, output_path):
+        try:
+            # Attempt to write the DataFrame to the requested path using pandas
+            self.df.to_csv(output_path, index=False)
+            # Remember where the file was written so Open and Save can reuse it
+            self.last_exported_file = output_path
+            self.saved_file_path = output_path
+            # Enable the Open button now that a file exists on disk
+            self.btn_open_file.config(state=tk.NORMAL)
+            # Log and notify the user of successful save
+            self.log_message(f"Results saved to: {output_path}")
+            messagebox.showinfo(
+                "Save Successful",
+                f"Estimated results saved to:\n\n{output_path}"
+            )
+            return True
+        except Exception as e:
+            # Show an error dialog when the write fails and return failure indicator
+            messagebox.showerror(
+                "Save Failure",
+                f"Could not save results:\n{str(e)}"
+            )
+            return False
+
+    def save_results(self):
+        if self.df is None:
+            messagebox.showwarning(
+                "No Data",
+                "Load a CSV and run an estimation before saving."
+            )
+            return
+
+        # If the path is already saved, reuse it
+        if self.saved_file_path:
+            if self._save_to_path(self.saved_file_path):
+                self.has_unsaved_results = False
+            return
+
+        # Default Save: attempt to write into the project root using estimated_<original>
+        try:
+            dir_name, file_name = os.path.split(self.file_path)
+            project_root = self._project_root()
+            default_name = f"estimated_{file_name}"
+            output_path = os.path.join(project_root, default_name)
+        except Exception:
+            # If any issue, fall back to asking the user for a save location
+            output_path = self._choose_export_path(f"estimated_{os.path.basename(self.file_path) if self.file_path else 'results.csv'}")
+
+        if not output_path:
+            self.log_message("Save cancelled by user.")
+            return
+
+        if self._save_to_path(output_path):
+            self.has_unsaved_results = False
+
+    def save_results_as(self):
+        if self.df is None:
+            messagebox.showwarning(
+                "No Data",
+                "Load a CSV and run an estimation before saving."
+            )
+            return
+
+        dir_name, file_name = os.path.split(self.file_path)
+        # Always prompt the user to choose a save location for Save As
+        output_path = self._choose_export_path(f"estimated_{file_name}")
+        if not output_path:
+            self.log_message("Save As cancelled by user.")
+            return
+        if self._save_to_path(output_path):
+            self.has_unsaved_results = False
+
     # Save calculated estimations into local files without overwriting raw datasets
     def export_results(self, target_id, target_col, predicted_mark):
         # Update the empty cell inside our local pandas DataFrame with the predicted mark
@@ -697,12 +817,15 @@ class MarkEstimatorApp:
 
         # Split the absolute directory folder string away from the filename structure components
         dir_name, file_name = os.path.split(self.file_path)
-        # Create a new output file name by adding the 'estimated_' prefix to the original name
-        output_path = os.path.join(dir_name, f"estimated_{file_name}")
+        # Ask the user where to save the exported CSV file
+        output_path = self._choose_export_path(f"estimated_{file_name}")
+        if not output_path:
+            self.log_message("Export cancelled by user.")
+            return
 
         # Wrap file export calls in a protective handling routine block to catch write permissions locks
         try:
-            # Command pandas to write the updated dataframe matrix out into a new CSV file
+            # Write the updated DataFrame to CSV using pandas
             self.df.to_csv(output_path, index=False)
 
             # Save the export location string link into our text file viewer tracker variable
