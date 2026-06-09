@@ -6,7 +6,7 @@ STUDENT MARK ESTIMATOR - INSTALLATION & USAGE INSTRUCTIONS
 THERE ARE 2 OPTIONS FOR RUNNING THIS PROGRAM, READ THIS
 ========================================================
 
-OPTION 1: run MarkEstimatorApp.exe directly from the folder which will load it without any other action on your part
+OPTION 1: run MarkEstimatorApp.exe directly from \dist\MarkEstimatorApp\MarkEstimatorApp.exe which will load it without any other action on your part
 
 OR
 

@@ -138,3 +138,11 @@ WEDNESDAY 04/06/2026
 - Fixed typo in mark_estimator_FULL COMMENTS.py ====> mark_estimator_FULL_COMMENTS.py
 - Updated mark_estimator_FULL_COMMENTS.py to fall in line with the changes in experimental
 - Updated mark_estimator_gui_version.py to fall in line with the changes in experimental
+------------------------------------------------------------------------------------------------
+1.4.0.0 - FINAL
+- Added .pdf for documentation
+- Added presentation
+- Fixed fatal bug in .exe that would not allow program to launch through it
+- Updated 4_Testing.txt
+- Moved the /dist folder to the main root for easier access by the user
+  - Allows the user to see the folder in GitHub and thus allows access to the .exe
