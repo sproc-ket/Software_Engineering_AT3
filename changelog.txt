@@ -146,3 +146,6 @@ WEDNESDAY 04/06/2026
 - Updated 4_Testing.txt
 - Moved the /dist folder to the main root for easier access by the user
   - Allows the user to see the folder in GitHub and thus allows access to the .exe
+------------------------------------------------------------------------------------------------
+1.4.1.0
+- Added better error handling to resolve errors within IDE
