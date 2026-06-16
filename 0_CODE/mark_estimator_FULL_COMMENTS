@@ -472,6 +472,15 @@ class MarkEstimatorApp:
         # Clear out old indexing maps to start fresh for our search scan run
         self.missing_records = []
 
+        # Prevent scanning when no dataset has been loaded into memory yet
+        if self.df is None or not self.assessment_cols:
+            self.btn_estimate.config(state=tk.DISABLED)
+            self.btn_run_all.config(state=tk.DISABLED)
+            self.btn_save.config(state=tk.DISABLED)
+            self.btn_save_as.config(state=tk.DISABLED)
+            self.btn_open_file.config(state=tk.NORMAL if self.last_exported_file else tk.DISABLED)
+            return
+
         # Find rows where any assessment column is NaN (missing a score)
         missing_mask = self.df[self.assessment_cols].isna().any(axis=1)
         # Isolate the rows containing missing marks into a separate filtered subset
@@ -499,7 +508,8 @@ class MarkEstimatorApp:
         # Loop through the rows containing missing marks to isolate empty cells
         for _, row in missing_df.iterrows():
             # Extract the unique Student ID string key from the current row
-            student_id = row[self.id_col]
+            # Use .get to satisfy type-checkers in case id_col is unexpectedly None
+            student_id = row.get(self.id_col)
             # Check every individual assessment column for this specific student row
             for col in self.assessment_cols:
                 # If the value in the cell is missing (NaN), record it as an estimation target
@@ -617,7 +627,8 @@ class MarkEstimatorApp:
             predicted_mark, metrics = self.predict_mark(target_id, target_col)
 
             # Update the DataFrame with the predicted mark
-            self.df.loc[self.df[self.id_col] == target_id, target_col] = predicted_mark
+            if self.df is not None:
+                self.df.loc[self.df[self.id_col] == target_id, target_col] = predicted_mark
 
             # Store the result for the summary
             estimation_results.append({
@@ -648,6 +659,10 @@ class MarkEstimatorApp:
     def predict_mark(self, target_id, target_col):
         # Create a list of feature columns by omitting the target column from the assessments list
         feature_cols = [c for c in self.assessment_cols if c != target_col]
+
+        # Safety Guard: Ensure we have a loaded DataFrame and the target column exists
+        if self.df is None or target_col not in self.df.columns:
+            return 0.0, {"Fallback Route": "No data available for prediction"}
 
         # Safety Fallback 1: If there is only one assessment column, multi-feature ML can't be used
         if not feature_cols:
@@ -737,9 +752,18 @@ class MarkEstimatorApp:
             return os.getcwd()
 
     def _save_to_path(self, output_path):
+        # Ensure there is a DataFrame-like object with a to_csv method to write
+        df_candidate = getattr(self, 'df', None)
+        if df_candidate is None or not hasattr(df_candidate, 'to_csv'):
+            messagebox.showerror(
+                "Save Failure",
+                "No data available to save. Load a CSV and run an estimation before saving."
+            )
+            return False
+
         try:
-            # Attempt to write the DataFrame to the requested path using pandas
-            self.df.to_csv(output_path, index=False)
+            # Attempt to write the DataFrame-like object to the requested path using pandas
+            df_candidate.to_csv(output_path, index=False)
             # Remember where the file was written so Open and Save can reuse it
             self.last_exported_file = output_path
             self.saved_file_path = output_path
@@ -776,7 +800,9 @@ class MarkEstimatorApp:
 
         # Default Save: attempt to write into the project root using estimated_<original>
         try:
-            dir_name, file_name = os.path.split(self.file_path)
+            # Ensure file_path is a string for os.path.split to avoid type issues
+            file_path_for_split = self.file_path if self.file_path is not None else ""
+            dir_name, file_name = os.path.split(file_path_for_split)
             project_root = self._project_root()
             default_name = f"estimated_{file_name}"
             output_path = os.path.join(project_root, default_name)
@@ -799,6 +825,13 @@ class MarkEstimatorApp:
             )
             return
 
+        if self.file_path is None:
+            messagebox.showwarning(
+                "No File",
+                "Load a CSV file before saving."
+            )
+            return
+
         dir_name, file_name = os.path.split(self.file_path)
         # Always prompt the user to choose a save location for Save As
         output_path = self._choose_export_path(f"estimated_{file_name}")
@@ -810,6 +843,24 @@ class MarkEstimatorApp:
 
     # Save calculated estimations into local files without overwriting raw datasets
     def export_results(self, target_id, target_col, predicted_mark):
+        # Ensure a source file path exists before attempting to export
+        if self.file_path is None:
+            self.log_message("Export cancelled: no source file loaded.")
+            messagebox.showwarning(
+                "No File",
+                "Load a CSV file before exporting."
+            )
+            return
+
+        # Ensure the DataFrame is loaded before attempting to modify it
+        if self.df is None:
+            self.log_message("Export cancelled: data not loaded into memory.")
+            messagebox.showwarning(
+                "No Data",
+                "Load a CSV file before exporting."
+            )
+            return
+
         # Update the empty cell inside our local pandas DataFrame with the predicted mark
         self.df.loc[self.df[self.id_col] == target_id, target_col] = (
             predicted_mark
